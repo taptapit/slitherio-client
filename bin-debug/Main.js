@@ -193,8 +193,9 @@ var Main = (function (_super) {
         textfield.x = 172;
         textfield.y = 135;
         this.textfield = textfield;
-        console.log("pre start game");
-        //let slitherGame = new game.Game();
+        // console.log("pre start game");
+        var slitherGame = new game.Game(this);
+        // this.addChild(slitherGame);
     };
     /**
      * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。

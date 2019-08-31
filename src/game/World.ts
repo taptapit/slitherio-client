@@ -10,7 +10,8 @@ module game {
 
 		public constructor() {
 			super();
-			this.addEventListener(egret.Event.ADDED_TO_STAGE,this.onAddToStage,this);
+			// this.addEventListener(egret.Event.ADDED_TO_STAGE,this.onAddToStage,this);
+			this.onAddToStage();
 		}
 
 		private onAddToStage()

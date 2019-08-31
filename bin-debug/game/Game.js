@@ -12,9 +12,10 @@ var game;
 (function (game) {
     var Game = (function (_super) {
         __extends(Game, _super);
-        function Game() {
+        function Game(container) {
             var _this = _super.call(this) || this;
-            _this.addChild(egret.MainContext.instance.stage);
+            // this.addChild(egret.MainContext.instance.stage);
+            container.addChild(_this);
             _this.setup();
             _this.start();
             return _this;
@@ -44,22 +45,25 @@ var game;
             aboveUILayer.touchEnabled = false;
             this.addChild(aboveUILayer);
             game.Context.scene = scene;
+            game.Context.snakeLayer = snakeLayer;
             game.Camera.resize(egret.MainContext.instance.stage.stageWidth, egret.MainContext.instance.stage.stageHeight);
         };
         Game.prototype.start = function () {
             console.log("start");
             this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
-            game.Context.player = game.SnakeFactory.RandomCreate();
+            var player = game.SnakeFactory.RandomCreate();
+            game.Context.player = player;
+            GameObjectManager.getInstance().snakes.push(player);
         };
         Game.prototype.stop = function () {
             this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
         };
         Game.prototype.onEnterFrame = function (event) {
             if (isNaN(this.lastTick))
-                this.lastTick = egret.getTimer();
+                this.lastTick = egret.getTimer() * 0.001;
             if (isNaN(this.currentTick))
-                this.currentTick = egret.getTimer();
-            this.currentTick = egret.getTimer();
+                this.currentTick = egret.getTimer() * 0.001;
+            this.currentTick = egret.getTimer() * 0.001;
             this.deltaTime = this.currentTick - this.lastTick;
             this.lastTick = this.currentTick;
             console.log("onEnterFrame:" + this.deltaTime);
@@ -71,10 +75,10 @@ var game;
             this.updateMiniMap();
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
-            for (var i = 0; i <= snakes.length; i++) {
+            for (var i = 0; i <= snakes.length - 1; i++) {
                 snakes[i].update(this.deltaTime);
             }
-            for (var i = 0; i <= foods.length; i++) {
+            for (var i = 0; i <= foods.length - 1; i++) {
                 foods[i].update(this.deltaTime);
             }
         };
@@ -84,10 +88,10 @@ var game;
         Game.prototype.render = function () {
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
-            for (var i = 0; i <= snakes.length; i++) {
+            for (var i = 0; i < snakes.length; i++) {
                 snakes[i].render();
             }
-            for (var i = 0; i <= foods.length; i++) {
+            for (var i = 0; i < foods.length; i++) {
                 foods[i].render();
             }
             game.Camera.update();

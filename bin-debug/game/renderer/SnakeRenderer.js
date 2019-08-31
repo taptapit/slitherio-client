@@ -18,10 +18,14 @@ var game;
                 var _this = _super.call(this) || this;
                 _this.data = data;
                 _this.touchEnabled = false;
+                _this.subRenderers = [];
                 return _this;
             }
             SnakeRenderer.prototype.createSubRenderer = function () {
                 var subRenderer = new egret.Sprite();
+                subRenderer.graphics.beginFill(0x000000);
+                subRenderer.graphics.drawCircle(0, 0, game.Snake.BODY_SIZE);
+                subRenderer.graphics.endFill();
                 this.subRenderers.push(subRenderer);
                 this.addChild(subRenderer);
                 return subRenderer;
@@ -30,12 +34,13 @@ var game;
                 this.subRenderers.splice(index, 1);
             };
             SnakeRenderer.prototype.render = function () {
-                var snake;
+                var snake = this.data;
                 var snakePoint;
                 var subRenderer;
                 //update subRenderers
-                for (var i = 0; i <= this.data.points.length; i++) {
+                for (var i = 0; i < this.data.points.length; i++) {
                     snakePoint = this.data.points[i];
+                    console.log("snakePoint:" + snakePoint);
                     subRenderer = this.subRenderers.length > i ? this.subRenderers[i] : this.createSubRenderer();
                     subRenderer.scaleX = snake.scale;
                     subRenderer.scaleY = snake.scale;

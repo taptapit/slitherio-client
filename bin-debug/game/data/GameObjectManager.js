@@ -7,6 +7,8 @@ var game;
     (function (data) {
         var GameObjectManager = (function () {
             function GameObjectManager() {
+                this.snakes = [];
+                this.foods = [];
             }
             GameObjectManager.getInstance = function () {
                 if (!this.instance) {

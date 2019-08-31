@@ -3,9 +3,10 @@ module game {
 
 		public self : Snake;
 
-		public constructor() {
+		public constructor(container) {
 			super();
-			this.addChild(egret.MainContext.instance.stage);
+			// this.addChild(egret.MainContext.instance.stage);
+			container.addChild(this);
 
 			this.setup();
 			this.start();
@@ -50,6 +51,7 @@ module game {
 			this.addChild(aboveUILayer);
 
 			Context.scene = scene;
+			Context.snakeLayer = snakeLayer;
 
 			Camera.resize(egret.MainContext.instance.stage.stageWidth, egret.MainContext.instance.stage.stageHeight);
 		}
@@ -59,7 +61,9 @@ module game {
 			console.log("start");
 			this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
 
-			Context.player = SnakeFactory.RandomCreate();
+			let player = SnakeFactory.RandomCreate();
+			Context.player = player;
+			GameObjectManager.getInstance().snakes.push(player);
 		}
 
 		public stop()
@@ -72,9 +76,9 @@ module game {
 		private deltaTime : number;
 		private onEnterFrame(event:egret.Event)
 		{
-			if(isNaN(this.lastTick))this.lastTick = egret.getTimer();
-			if(isNaN(this.currentTick))this.currentTick = egret.getTimer();
-			this.currentTick = egret.getTimer();
+			if(isNaN(this.lastTick))this.lastTick = egret.getTimer() * 0.001;
+			if(isNaN(this.currentTick))this.currentTick = egret.getTimer() * 0.001;
+			this.currentTick = egret.getTimer() * 0.001;
 			this.deltaTime = this.currentTick - this.lastTick;
 			this.lastTick = this.currentTick;
 
@@ -91,11 +95,11 @@ module game {
 
 			let snakes = GameObjectManager.getInstance().snakes;
 			let foods = GameObjectManager.getInstance().foods;
-			for(var i = 0 ; i <= snakes.length; i++)
+			for(var i = 0 ; i <= snakes.length - 1; i++)
 			{
 				snakes[i].update(this.deltaTime);
 			}
-			for(var i = 0 ; i <= foods.length; i++)
+			for(var i = 0 ; i <= foods.length - 1; i++)
 			{
 				foods[i].update(this.deltaTime);
 			}
@@ -110,11 +114,11 @@ module game {
 		{
 			let snakes = GameObjectManager.getInstance().snakes;
 			let foods = GameObjectManager.getInstance().foods;
-			for(var i = 0 ; i <= snakes.length; i++)
+			for(var i = 0 ; i < snakes.length; i++)
 			{
 				snakes[i].render();
 			}
-			for(var i = 0 ; i <= foods.length; i++)
+			for(var i = 0 ; i < foods.length; i++)
 			{
 				foods[i].render();
 			}

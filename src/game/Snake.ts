@@ -4,7 +4,7 @@ import GameObjectManager = game.data.GameObjectManager
 module game {
 
 	export class Snake {
-
+		public static BODY_SIZE = 10;
 		public static BORN_BODY_LENGTH = 6;
 		private static BORN_SCALE = 1;
 		private static MAX_SCALE = 5;
@@ -55,7 +55,7 @@ module game {
 
 		public static energy2Length(energy)
 		{
-			return Math.floor(energy / Snake.ENERGY_PER_POINT)
+			return Math.floor(energy / Snake.ENERGY_PER_POINT);
 		}
 
 		public constructor(id, name, position, angle, velocity, points = null, skin = 0, energy = 0) {
@@ -172,13 +172,20 @@ module game {
 
 		public move(deltaTime)
 		{
+			
 			let distance = this.velocity * deltaTime;
 			let deltaPoint = this.points.length * Snake.BODY_POINT_DELTA_SCALE;
 			let movePoints = distance / deltaPoint;
 			
+			console.log("move time:" + deltaTime);
+			console.log("move distance:" + distance);
+			console.log("move movePoints:" + movePoints);
+			
 			this.position.x = this.position.x + Math.cos(this.angle) * movePoints;
 			this.position.y = this.position.y + Math.sin(this.angle) * movePoints;
 
+			console.log("this.points.length" + this.points.length);
+			console.log("this.length" + this.length);
 			if(this.points.length > this.length)
 			{
 				this.points.pop();
@@ -231,12 +238,22 @@ module game {
 
 		public render()
 		{
-			if(!Camera.isInViewPort(this.boundingBox))return;
+			let isVisible = Camera.isInViewPort(this.boundingBox);
+			console.log("isVisible:" + isVisible);
 
-			if(this.renderer)
+			if(Camera.isInViewPort(this.boundingBox))
 			{
-				this.renderer.render();
+				if(this.renderer)
+				{
+					if(!this.renderer.parent) Context.snakeLayer.addChild(this.renderer);
+					
+					this.renderer.render();
+				}
+			}else
+			{
+				if(this.renderer.parent) Context.snakeLayer.removeChild(this.renderer);
 			}
+			
 		}
 
 	}

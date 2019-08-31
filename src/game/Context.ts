@@ -5,6 +5,8 @@ module game {
 
 		public static scene : egret.DisplayObjectContainer;
 
+		public static snakeLayer : egret.DisplayObjectContainer;
+
 		public constructor() {
 		}
 	}

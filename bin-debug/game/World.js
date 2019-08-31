@@ -14,7 +14,8 @@ var game;
         __extends(World, _super);
         function World() {
             var _this = _super.call(this) || this;
-            _this.addEventListener(egret.Event.ADDED_TO_STAGE, _this.onAddToStage, _this);
+            // this.addEventListener(egret.Event.ADDED_TO_STAGE,this.onAddToStage,this);
+            _this.onAddToStage();
             return _this;
         }
         World.prototype.onAddToStage = function () {

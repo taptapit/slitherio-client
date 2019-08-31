@@ -115,8 +115,13 @@ var game;
             var distance = this.velocity * deltaTime;
             var deltaPoint = this.points.length * Snake.BODY_POINT_DELTA_SCALE;
             var movePoints = distance / deltaPoint;
+            console.log("move time:" + deltaTime);
+            console.log("move distance:" + distance);
+            console.log("move movePoints:" + movePoints);
             this.position.x = this.position.x + Math.cos(this.angle) * movePoints;
             this.position.y = this.position.y + Math.sin(this.angle) * movePoints;
+            console.log("this.points.length" + this.points.length);
+            console.log("this.length" + this.length);
             if (this.points.length > this.length) {
                 this.points.pop();
             }
@@ -156,12 +161,21 @@ var game;
             this.boundingBox.setTo(minX - radius, minY - radius, maxX - minX, maxY - minY);
         };
         Snake.prototype.render = function () {
-            if (!game.Camera.isInViewPort(this.boundingBox))
-                return;
-            if (this.renderer) {
-                this.renderer.render();
+            var isVisible = game.Camera.isInViewPort(this.boundingBox);
+            console.log("isVisible:" + isVisible);
+            if (game.Camera.isInViewPort(this.boundingBox)) {
+                if (this.renderer) {
+                    if (!this.renderer.parent)
+                        game.Context.snakeLayer.addChild(this.renderer);
+                    this.renderer.render();
+                }
+            }
+            else {
+                if (this.renderer.parent)
+                    game.Context.snakeLayer.removeChild(this.renderer);
             }
         };
+        Snake.BODY_SIZE = 10;
         Snake.BORN_BODY_LENGTH = 6;
         Snake.BORN_SCALE = 1;
         Snake.MAX_SCALE = 5;
