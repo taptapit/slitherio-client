@@ -22,5 +22,16 @@ module game {
 			this.eaten = eaten;
 			this.eatenBy = eatenBy;
 		}
+
+		public update(deltaTime)
+		{
+
+		}
+
+		public render()
+		{
+			
+		}
+
 	}
 }

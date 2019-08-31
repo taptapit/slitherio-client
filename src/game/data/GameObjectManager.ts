@@ -12,11 +12,12 @@ module game.data {
 			return this.instance;
 		}
 
-		public snakes : {[index: number]: Snake};
+		public snakes : Snake[];
 
-		public foods : {[index: number]: Food};
+		public foods : Food[];
 
 		public constructor() {
 		}
+
 	}
 }

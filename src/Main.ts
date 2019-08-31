@@ -143,7 +143,8 @@ class Main extends egret.DisplayObjectContainer {
         textfield.y = 135;
         this.textfield = textfield;
 
-        let slitherGame = new game.Game();
+        console.log("pre start game");
+        //let slitherGame = new game.Game();
     }
 
     /**

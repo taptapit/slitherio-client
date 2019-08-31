@@ -17,7 +17,7 @@ module game {
 		public static ENERGY_LIMIT_FOR_ACCELERATE = Snake.ENERGY_PER_POINT * 5;
 		
 		public id : number;
-		public position : game.data.Vector2;
+		public position : egret.Point;
 		public points : game.SnakePoint[];
 		public name : string;
 		public skin : number;
@@ -33,6 +33,9 @@ module game {
 		public length : number;
 		public targetAngle : number;
 		public isAccelerate : boolean;
+		public renderer : renderer.SnakeRenderer;
+		public isInView : boolean;
+		public boundingBox : egret.Rectangle;
 
 		public static length2Scale(length)
 		{
@@ -68,6 +71,8 @@ module game {
 			this.length = Snake.energy2Length(energy);
 			this.scale = Snake.length2Scale(this.length);
 			this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
+			this.boundingBox = egret.Rectangle.create();
+			this.renderer = new renderer.SnakeRenderer(this);
 		}
 
 		public Dead()
@@ -82,22 +87,22 @@ module game {
 			this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
 		}
 
-		public Update(deltaTime)
+		public update(deltaTime)
 		{
-			this.UpdateNameAlpha();
-			this.UpdateTargetAngle();
-			this.UpdateDying(deltaTime);
-			this.UpdateEnergy(deltaTime);
-			this.Turn(deltaTime);
-			this.Move(deltaTime);
+			this.updateNameAlpha();
+			this.updateTargetAngle();
+			this.updateDying(deltaTime);
+			this.updateEnergy(deltaTime);
+			this.turn(deltaTime);
+			this.move(deltaTime);
 		}
 
-		public UpdateNameAlpha()
+		public updateNameAlpha()
 		{
 			//TODO
 		}
 
-		public UpdateDying(deltaTime)
+		public updateDying(deltaTime)
 		{
 			if(this.isDead)
 			{
@@ -109,7 +114,7 @@ module game {
 			}
 		}
 
-		public UpdateEnergy(deltaTime)
+		public updateEnergy(deltaTime)
 		{
 			if(!this.isAccelerate)return;
 
@@ -134,7 +139,7 @@ module game {
 			}
 		}
 
-		public UpdateTargetAngle()
+		public updateTargetAngle()
 		{
 			let deltaX = Input.getInstance().deltaX;
 			let deltaY = Input.getInstance().deltaY;
@@ -146,7 +151,7 @@ module game {
 			}
 		}
 
-		public Turn(deltaTime)
+		public turn(deltaTime)
 		{
 			this.angle = ((this.angle + Math.PI) % (Math.PI * 2)) - Math.PI;
 			this.targetAngle = ((this.targetAngle + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -165,7 +170,7 @@ module game {
 			}
 		}
 
-		public Move(deltaTime)
+		public move(deltaTime)
 		{
 			let distance = this.velocity * deltaTime;
 			let deltaPoint = this.points.length * Snake.BODY_POINT_DELTA_SCALE;
@@ -179,7 +184,7 @@ module game {
 				this.points.pop();
 			}else
 			{
-				let point = ObjectPool.get(game.data.Vector2);
+				let point = ObjectPool.get(SnakePoint);
 				point.x = this.position.x;
 				point.y = this.position.y;
 
@@ -200,10 +205,39 @@ module game {
 					this.points.unshift(point);
 				}
 			}
-
+			
 		}
 
+		public updateBoundingBox()
+		{
+			let minX :number;
+			let minY :number;
+			let maxX :number;
+			let maxY :number;
+			let point : SnakePoint;
+			let radius : number = this.scale;
 
+			for(var i = 0; i <= this.points.length; i++)
+			{
+				point = this.points[i];
+				minX = isNaN(minX) ? point.x : Math.min(minX, point.x);
+				minY = isNaN(minY) ? point.y : Math.min(minY, point.y);
+				maxX = isNaN(maxX) ? point.x : Math.max(minX, point.x);
+				maxY = isNaN(maxY) ? point.y : Math.max(minY, point.y);
+			}
+
+			this.boundingBox.setTo(minX-radius, minY-radius, maxX-minX, maxY-minY);
+		}
+
+		public render()
+		{
+			if(!Camera.isInViewPort(this.boundingBox))return;
+
+			if(this.renderer)
+			{
+				this.renderer.render();
+			}
+		}
 
 	}
 }

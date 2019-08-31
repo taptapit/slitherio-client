@@ -9,7 +9,7 @@ var game;
             function ObjectPool() {
             }
             ObjectPool._construct = function (cls) {
-                return new cls;
+                return new cls();
             };
             ObjectPool.get = function (cls) {
                 return ObjectPool._construct(cls);

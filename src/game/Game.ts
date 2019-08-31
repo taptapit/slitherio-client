@@ -7,8 +7,8 @@ module game {
 			super();
 			this.addChild(egret.MainContext.instance.stage);
 
-			this.setupInput();
-			this.setupContainer();
+			this.setup();
+			this.start();
 		}
 
 		public send()
@@ -21,13 +21,10 @@ module game {
 
 		}
 
-		public setupInput()
+		public setup()
 		{
 			Input.getInstance();
-		}
 
-		public setupContainer()
-		{
 			let scene = new egret.DisplayObjectContainer();
 			scene.touchEnabled = false;
 			this.addChild(scene);
@@ -49,15 +46,20 @@ module game {
 			scene.addChild(snakeLayer);
 
 			let aboveUILayer = new egret.DisplayObjectContainer();
-			snakeLayer.touchEnabled = false;
-			scene.addChild(snakeLayer);
+			aboveUILayer.touchEnabled = false;
+			this.addChild(aboveUILayer);
+
+			Context.scene = scene;
+
+			Camera.resize(egret.MainContext.instance.stage.stageWidth, egret.MainContext.instance.stage.stageHeight);
 		}
 
 		public start()
 		{
+			console.log("start");
 			this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
 
-			this.self = SnakeFactory.RandomCreate();
+			Context.player = SnakeFactory.RandomCreate();
 		}
 
 		public stop()
@@ -76,14 +78,27 @@ module game {
 			this.deltaTime = this.currentTick - this.lastTick;
 			this.lastTick = this.currentTick;
 
-			this.preRender();
+			console.log("onEnterFrame:" + this.deltaTime);
+
+			this.update();
 			this.render();
 		}
 
-		private preRender()
+		private update()
 		{
 			FoodFactory.RandomCreate();
 			this.updateMiniMap();
+
+			let snakes = GameObjectManager.getInstance().snakes;
+			let foods = GameObjectManager.getInstance().foods;
+			for(var i = 0 ; i <= snakes.length; i++)
+			{
+				snakes[i].update(this.deltaTime);
+			}
+			for(var i = 0 ; i <= foods.length; i++)
+			{
+				foods[i].update(this.deltaTime);
+			}
 		}
 
 		private updateMiniMap()
@@ -93,7 +108,18 @@ module game {
 
 		private render()
 		{
+			let snakes = GameObjectManager.getInstance().snakes;
+			let foods = GameObjectManager.getInstance().foods;
+			for(var i = 0 ; i <= snakes.length; i++)
+			{
+				snakes[i].render();
+			}
+			for(var i = 0 ; i <= foods.length; i++)
+			{
+				foods[i].render();
+			}
 
+			Camera.update();
 		}
 
 	}

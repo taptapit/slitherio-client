@@ -8,17 +8,23 @@
 		"libs/modules/promise/promise.js"
 	],
 	"game": [
-		"bin-debug/game/Input.js",
-		"bin-debug/LoadingUI.js",
+		"bin-debug/game/utils/ObjectPool.js",
+		"bin-debug/game/data/GameObjectManager.js",
 		"bin-debug/Platform.js",
+		"bin-debug/game/Camera.js",
+		"bin-debug/game/Context.js",
 		"bin-debug/game/Food.js",
+		"bin-debug/game/FoodFactory.js",
 		"bin-debug/game/Game.js",
 		"bin-debug/game/GameNetManager.js",
 		"bin-debug/Main.js",
 		"bin-debug/game/PoolManager.js",
 		"bin-debug/game/Snake.js",
+		"bin-debug/game/SnakeFactory.js",
+		"bin-debug/game/SnakePoint.js",
 		"bin-debug/game/World.js",
-		"bin-debug/game/data/Vector2.js",
-		"bin-debug/game/utils/ObjectPool.js"
+		"bin-debug/LoadingUI.js",
+		"bin-debug/game/renderer/SnakeRenderer.js",
+		"bin-debug/game/Input.js"
 	]
 }

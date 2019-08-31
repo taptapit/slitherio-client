@@ -15,13 +15,22 @@ var game;
             }
             return this.instance;
         };
+        Input.prototype.IsDoubleClick = function () {
+            var curClickTime = egret.getTimer();
+            var value = !isNaN(this.lastClickTime) && (curClickTime - this.lastClickTime) < 400;
+            this.lastClickTime = curClickTime;
+            return value;
+        };
         Input.prototype.onTouchBegin = function (e) {
+            this.isDoubleClick = this.IsDoubleClick();
             this.isTouching = true;
             this.lastTouchX = e.stageX;
             this.lastTouchY = e.stageY;
-            console.log("onTouchBegin");
+            console.log("onTouchBegin isDoubleClick:" + this.isDoubleClick);
         };
         Input.prototype.onTouchMove = function (e) {
+            this.lastDeltaX = this.deltaX;
+            this.lastDeltaY = this.deltaY;
             this.deltaX = e.stageX - this.lastTouchX;
             this.deltaY = e.stageY - this.lastTouchY;
             this.lastTouchX = e.stageX;
@@ -29,6 +38,8 @@ var game;
             console.log("onTouchMove:x:" + this.deltaX + ",y:" + this.deltaY);
         };
         Input.prototype.onTouchEnd = function (e) {
+            this.isTouching = false;
+            this.isDoubleClick = false;
             console.log("onTouchEnd");
         };
         return Input;

@@ -14,16 +14,83 @@ var game;
         __extends(Game, _super);
         function Game() {
             var _this = _super.call(this) || this;
-            game.Input.getInstance();
-            var world = new game.World();
-            _this.addChild(world);
+            _this.addChild(egret.MainContext.instance.stage);
+            _this.setup();
+            _this.start();
             return _this;
         }
-        Game.prototype.Send = function () {
+        Game.prototype.send = function () {
         };
-        Game.prototype.Recieved = function () {
+        Game.prototype.recieved = function () {
         };
-        Game.prototype.Render = function () {
+        Game.prototype.setup = function () {
+            game.Input.getInstance();
+            var scene = new egret.DisplayObjectContainer();
+            scene.touchEnabled = false;
+            this.addChild(scene);
+            var world = new game.World();
+            world.touchEnabled = false;
+            scene.addChild(world);
+            var underUILayer = new egret.DisplayObjectContainer();
+            underUILayer.touchEnabled = false;
+            scene.addChild(underUILayer);
+            var footLayer = new egret.DisplayObjectContainer();
+            footLayer.touchEnabled = false;
+            scene.addChild(footLayer);
+            var snakeLayer = new egret.DisplayObjectContainer();
+            snakeLayer.touchEnabled = false;
+            scene.addChild(snakeLayer);
+            var aboveUILayer = new egret.DisplayObjectContainer();
+            aboveUILayer.touchEnabled = false;
+            this.addChild(aboveUILayer);
+            game.Context.scene = scene;
+            game.Camera.resize(egret.MainContext.instance.stage.stageWidth, egret.MainContext.instance.stage.stageHeight);
+        };
+        Game.prototype.start = function () {
+            console.log("start");
+            this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+            game.Context.player = game.SnakeFactory.RandomCreate();
+        };
+        Game.prototype.stop = function () {
+            this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+        };
+        Game.prototype.onEnterFrame = function (event) {
+            if (isNaN(this.lastTick))
+                this.lastTick = egret.getTimer();
+            if (isNaN(this.currentTick))
+                this.currentTick = egret.getTimer();
+            this.currentTick = egret.getTimer();
+            this.deltaTime = this.currentTick - this.lastTick;
+            this.lastTick = this.currentTick;
+            console.log("onEnterFrame:" + this.deltaTime);
+            this.update();
+            this.render();
+        };
+        Game.prototype.update = function () {
+            game.FoodFactory.RandomCreate();
+            this.updateMiniMap();
+            var snakes = GameObjectManager.getInstance().snakes;
+            var foods = GameObjectManager.getInstance().foods;
+            for (var i = 0; i <= snakes.length; i++) {
+                snakes[i].update(this.deltaTime);
+            }
+            for (var i = 0; i <= foods.length; i++) {
+                foods[i].update(this.deltaTime);
+            }
+        };
+        Game.prototype.updateMiniMap = function () {
+            //TODO
+        };
+        Game.prototype.render = function () {
+            var snakes = GameObjectManager.getInstance().snakes;
+            var foods = GameObjectManager.getInstance().foods;
+            for (var i = 0; i <= snakes.length; i++) {
+                snakes[i].render();
+            }
+            for (var i = 0; i <= foods.length; i++) {
+                foods[i].render();
+            }
+            game.Camera.update();
         };
         return Game;
     }(egret.DisplayObjectContainer));

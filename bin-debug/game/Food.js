@@ -4,8 +4,24 @@ var __reflect = (this && this.__reflect) || function (p, c, t) {
 var game;
 (function (game) {
     var Food = (function () {
-        function Food() {
+        function Food(id, x, y, energy, color, eaten, eatenBy) {
+            if (eaten === void 0) { eaten = false; }
+            if (eatenBy === void 0) { eatenBy = null; }
+            this.x = x;
+            this.y = y;
+            this.energy = energy;
+            this.scale = Food.energy2Scale(energy);
+            this.color = color;
+            this.eaten = eaten;
+            this.eatenBy = eatenBy;
         }
+        Food.energy2Scale = function (energy) {
+            return energy * 0.001;
+        };
+        Food.prototype.update = function (deltaTime) {
+        };
+        Food.prototype.render = function () {
+        };
         return Food;
     }());
     game.Food = Food;
