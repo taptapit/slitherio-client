@@ -14,6 +14,7 @@ var game;
             this.name = name;
             this.position = position;
             this.angle = angle;
+            this.targetAngle = angle;
             this.velocity = velocity;
             this.velocityTurnAngle = Snake.speed2TurnAngle(this.velocity);
             this.points = points;
@@ -24,6 +25,7 @@ var game;
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
             this.boundingBox = egret.Rectangle.create();
             this.renderer = new game.renderer.SnakeRenderer(this);
+            console.log("constructor angle:" + this.angle);
         }
         Snake.length2Scale = function (length) {
             length -= this.BORN_BODY_LENGTH;
@@ -38,20 +40,20 @@ var game;
         Snake.energy2Length = function (energy) {
             return Math.floor(energy / Snake.ENERGY_PER_POINT);
         };
-        Snake.prototype.Dead = function () {
+        Snake.prototype.dead = function () {
         };
-        Snake.prototype.Eat = function (energy) {
+        Snake.prototype.eat = function (energy) {
             this.energy += energy;
             this.length = Snake.energy2Length(energy);
             this.scale = Snake.length2Scale(this.length);
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
         };
         Snake.prototype.update = function (deltaTime) {
-            this.updateNameAlpha();
-            this.updateTargetAngle();
-            this.updateDying(deltaTime);
-            this.updateEnergy(deltaTime);
-            this.turn(deltaTime);
+            // this.updateNameAlpha();
+            // this.updateTargetAngle();
+            // this.updateDying(deltaTime);
+            // this.updateEnergy(deltaTime);
+            // this.turn(deltaTime);
             this.move(deltaTime);
         };
         Snake.prototype.updateNameAlpha = function () {
@@ -95,6 +97,7 @@ var game;
         };
         Snake.prototype.turn = function (deltaTime) {
             this.angle = ((this.angle + Math.PI) % (Math.PI * 2)) - Math.PI;
+            console.log("turn angle:" + this.angle);
             this.targetAngle = ((this.targetAngle + Math.PI) % (Math.PI * 2)) - Math.PI;
             var deltaAngle = deltaTime * this.scaleTurnAngle * this.velocityTurnAngle;
             deltaAngle = Math.min(deltaAngle, Math.abs(this.targetAngle - this.angle));
@@ -113,23 +116,26 @@ var game;
         };
         Snake.prototype.move = function (deltaTime) {
             var distance = this.velocity * deltaTime;
-            var deltaPoint = this.points.length * Snake.BODY_POINT_DELTA_SCALE;
+            var deltaPoint = this.scale * Snake.BODY_POINT_DELTA_SCALE;
             var movePoints = distance / deltaPoint;
             console.log("move time:" + deltaTime);
             console.log("move distance:" + distance);
             console.log("move movePoints:" + movePoints);
+            console.log("this.angle:" + this.angle);
+            console.log("111this.position:x:" + this.position.x + ",y:" + this.position.y);
             this.position.x = this.position.x + Math.cos(this.angle) * movePoints;
             this.position.y = this.position.y + Math.sin(this.angle) * movePoints;
+            console.log("222this.position:x:" + this.position.x + ",y:" + this.position.y);
             console.log("this.points.length" + this.points.length);
             console.log("this.length" + this.length);
             if (this.points.length > this.length) {
                 this.points.pop();
             }
             else {
-                var point = ObjectPool.get(game.SnakePoint);
-                point.x = this.position.x;
-                point.y = this.position.y;
                 if (this.points.length < this.length) {
+                    var point = ObjectPool.get(game.SnakePoint);
+                    point.x = this.position.x;
+                    point.y = this.position.y;
                     this.points.unshift(point);
                 }
                 else {
@@ -139,8 +145,8 @@ var game;
                         p.x = p.x + (q.x - p.x) * movePoints;
                         p.y = p.y + (q.y - p.y) * movePoints;
                     }
-                    ObjectPool.release(this.points.shift());
-                    this.points.unshift(point);
+                    this.points[0].x = this.position.x;
+                    this.points[0].y = this.position.y;
                 }
             }
         };

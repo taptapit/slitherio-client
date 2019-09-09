@@ -8,7 +8,7 @@ module game {
 
 		public static RandomCreate()
 		{
-			let snake = new Snake(SnakeFactory.UUID++, "None", egret.Point.create(0, 0), 0, Snake.VELOCITY_NORMAL);
+			let snake = new Snake(SnakeFactory.UUID++, "None", egret.Point.create(0, 0), 0, Snake.VELOCITY_NORMAL, null, 0, 120);
 
 			let points:SnakePoint[] = [];
 			let scale = Snake.length2Scale(Snake.BORN_BODY_LENGTH);
