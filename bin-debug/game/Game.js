@@ -51,9 +51,9 @@ var game;
         Game.prototype.start = function () {
             console.log("start");
             this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
-            var player = game.SnakeFactory.RandomCreate();
-            game.Context.player = player;
-            GameObjectManager.getInstance().snakes.push(player);
+            this.player = game.SnakeFactory.RandomCreate();
+            game.Context.player = this.player;
+            GameObjectManager.getInstance().snakes.push(this.player);
         };
         Game.prototype.stop = function () {
             this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
@@ -73,6 +73,10 @@ var game;
         Game.prototype.update = function () {
             game.FoodFactory.RandomCreate();
             this.updateMiniMap();
+            this.updateOperation();
+            if (this.player && !this.player.isDead) {
+                this.player.eat(1);
+            }
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
             for (var i = 0; i <= snakes.length - 1; i++) {
@@ -80,6 +84,20 @@ var game;
             }
             for (var i = 0; i <= foods.length - 1; i++) {
                 foods[i].update(this.deltaTime);
+            }
+        };
+        Game.prototype.updateOperation = function () {
+            if (this.player && !this.player.isDead) {
+                this.lastDeltaX = this.deltaX;
+                this.lastDeltaY = this.deltaY;
+                this.deltaX = game.Input.getInstance().deltaX;
+                this.deltaY = game.Input.getInstance().deltaY;
+                if (this.deltaX != this.lastDeltaX || this.deltaY != this.lastDeltaY) {
+                    this.player.targetAngle = Math.atan2(this.deltaY, this.deltaX);
+                    console.log("updateTargetAngle targetAngle:" + this.player.targetAngle);
+                }
+                this.player.isAccelerate = game.Input.getInstance().isDoubleClick;
+                this.player.velocity = this.player.isAccelerate ? game.Snake.VELOCITY_FAST : game.Snake.VELOCITY_NORMAL;
             }
         };
         Game.prototype.updateMiniMap = function () {

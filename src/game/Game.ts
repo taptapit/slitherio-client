@@ -1,7 +1,7 @@
 module game {
 	export class Game extends egret.DisplayObjectContainer {
 
-		public self : Snake;
+		public player : Snake;
 
 		public constructor(container) {
 			super();
@@ -61,9 +61,9 @@ module game {
 			console.log("start");
 			this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
 
-			let player = SnakeFactory.RandomCreate();
-			Context.player = player;
-			GameObjectManager.getInstance().snakes.push(player);
+			this.player = SnakeFactory.RandomCreate();
+			Context.player = this.player;
+			GameObjectManager.getInstance().snakes.push(this.player);
 		}
 
 		public stop()
@@ -92,6 +92,12 @@ module game {
 		{
 			FoodFactory.RandomCreate();
 			this.updateMiniMap();
+			this.updateOperation();
+
+			if(this.player && !this.player.isDead)
+			{
+				this.player.eat(1);
+			}
 
 			let snakes = GameObjectManager.getInstance().snakes;
 			let foods = GameObjectManager.getInstance().foods;
@@ -102,6 +108,29 @@ module game {
 			for(var i = 0 ; i <= foods.length - 1; i++)
 			{
 				foods[i].update(this.deltaTime);
+			}
+		}
+
+		private lastDeltaX : number;
+		private lastDeltaY : number;
+		private deltaX : number;
+		private deltaY : number;
+		private updateOperation()
+		{
+			if(this.player && !this.player.isDead)
+			{
+				this.lastDeltaX = this.deltaX;
+				this.lastDeltaY = this.deltaY;
+				this.deltaX = Input.getInstance().deltaX;
+				this.deltaY = Input.getInstance().deltaY;
+				if (this.deltaX != this.lastDeltaX || this.deltaY != this.lastDeltaY)
+				{
+					this.player.targetAngle = Math.atan2(this.deltaY, this.deltaX);
+					console.log("updateTargetAngle targetAngle:" + this.player.targetAngle);
+				}
+
+				this.player.isAccelerate = Input.getInstance().isDoubleClick;
+				this.player.velocity = this.player.isAccelerate ? Snake.VELOCITY_FAST : Snake.VELOCITY_NORMAL;
 			}
 		}
 

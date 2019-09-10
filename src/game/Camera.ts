@@ -23,14 +23,18 @@ module game {
 
 		public static update()
 		{
-			let player = Context.player && Context.player.renderer;
+			let player = Context.player;
 			let scene = Context.scene;
 			if (player && scene)
 			{
-				let sceneOffsetX = player.x - this.stageWith * 0.5;
-				let sceneOffsetY = player.y - this.stageHeight * 0.5;
+				let sceneOffsetX = player.position.x - this.stageWith * 0.5;
+				let sceneOffsetY = player.position.y - this.stageHeight * 0.5;
 				scene.x = -sceneOffsetX;
 				scene.y = -sceneOffsetY;
+
+				console.log("stageWith:" + this.stageWith + ",stageHeight:" + this.stageHeight);
+				console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
+				console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
 
 				this.viewPortMinX = scene.x;
 				this.viewPortMaxX = scene.x +this.stageWith;

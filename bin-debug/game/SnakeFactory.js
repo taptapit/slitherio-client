@@ -10,6 +10,7 @@ var game;
             var snake = new game.Snake(SnakeFactory.UUID++, "None", egret.Point.create(0, 0), 0, game.Snake.VELOCITY_NORMAL, null, 0, 120);
             var points = [];
             var scale = game.Snake.length2Scale(game.Snake.BORN_BODY_LENGTH);
+            snake.scale = scale;
             var angle = 2 * Math.PI * Math.random();
             for (var i = 0; i < game.Snake.BORN_BODY_LENGTH; i++) {
                 var point = new game.SnakePoint();

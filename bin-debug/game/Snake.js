@@ -16,7 +16,7 @@ var game;
             this.angle = angle;
             this.targetAngle = angle;
             this.velocity = velocity;
-            this.velocityTurnAngle = Snake.speed2TurnAngle(this.velocity);
+            this.velocityTurnAngle = Snake.velocity2TurnAngle(this.velocity);
             this.points = points;
             this.skin = skin;
             this.energy = energy;
@@ -25,7 +25,6 @@ var game;
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
             this.boundingBox = egret.Rectangle.create();
             this.renderer = new game.renderer.SnakeRenderer(this);
-            console.log("constructor angle:" + this.angle);
         }
         Snake.length2Scale = function (length) {
             length -= this.BORN_BODY_LENGTH;
@@ -34,7 +33,7 @@ var game;
         Snake.scale2TurnAngle = function (scale) {
             return 0.13 + 0.87 * Math.pow((this.BORN_SCALE + this.MAX_SCALE - scale) / this.MAX_SCALE, 2);
         };
-        Snake.speed2TurnAngle = function (velocity) {
+        Snake.velocity2TurnAngle = function (velocity) {
             return velocity * this.VELOCITY_TO_TURN_ANGLE;
         };
         Snake.energy2Length = function (energy) {
@@ -44,16 +43,15 @@ var game;
         };
         Snake.prototype.eat = function (energy) {
             this.energy += energy;
-            this.length = Snake.energy2Length(energy);
+            this.length = Snake.energy2Length(this.energy);
             this.scale = Snake.length2Scale(this.length);
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
         };
         Snake.prototype.update = function (deltaTime) {
-            // this.updateNameAlpha();
-            // this.updateTargetAngle();
-            // this.updateDying(deltaTime);
-            // this.updateEnergy(deltaTime);
-            // this.turn(deltaTime);
+            this.updateNameAlpha();
+            this.updateDying(deltaTime);
+            this.updateEnergy(deltaTime);
+            this.turn(deltaTime);
             this.move(deltaTime);
         };
         Snake.prototype.updateNameAlpha = function () {
@@ -86,21 +84,20 @@ var game;
                 this.isAccelerate = false;
             }
         };
-        Snake.prototype.updateTargetAngle = function () {
-            var deltaX = game.Input.getInstance().deltaX;
-            var deltaY = game.Input.getInstance().deltaY;
-            var lastDeltaX = game.Input.getInstance().lastDeltaX;
-            var lastDeltaY = game.Input.getInstance().lastDeltaY;
-            if (deltaX != lastDeltaX || deltaY != lastDeltaY) {
-                this.targetAngle = Math.atan2(deltaY, deltaX);
-            }
+        Snake.prototype.clamp = function (value, min, max) {
+            return value < min ? value += (max - min) : (value > max ? value -= (max - min) : value);
         };
         Snake.prototype.turn = function (deltaTime) {
-            this.angle = ((this.angle + Math.PI) % (Math.PI * 2)) - Math.PI;
-            console.log("turn angle:" + this.angle);
-            this.targetAngle = ((this.targetAngle + Math.PI) % (Math.PI * 2)) - Math.PI;
+            this.angle = this.clamp(((this.angle + Math.PI) % (Math.PI * 2)), -Math.PI, Math.PI) - Math.PI;
+            // console.log("turn angle:" + this.angle);
+            this.targetAngle = this.clamp(((this.targetAngle + Math.PI) % (Math.PI * 2)), -Math.PI, Math.PI) - Math.PI;
+            // console.log("turn targetAngle:" + this.targetAngle);
             var deltaAngle = deltaTime * this.scaleTurnAngle * this.velocityTurnAngle;
             deltaAngle = Math.min(deltaAngle, Math.abs(this.targetAngle - this.angle));
+            // console.log("turn deltaTime:" + deltaTime);
+            // console.log("turn velocityTurnAngle:" + this.velocityTurnAngle);
+            // console.log("turn scaleTurnAngle:" + this.scaleTurnAngle);
+            // console.log("turn deltaAngle:" + deltaAngle);
             if (Math.abs(this.angle - this.targetAngle) > Math.PI) {
                 if (this.targetAngle > this.angle)
                     this.angle -= deltaAngle;
@@ -118,16 +115,17 @@ var game;
             var distance = this.velocity * deltaTime;
             var deltaPoint = this.scale * Snake.BODY_POINT_DELTA_SCALE;
             var movePoints = distance / deltaPoint;
-            console.log("move time:" + deltaTime);
-            console.log("move distance:" + distance);
-            console.log("move movePoints:" + movePoints);
-            console.log("this.angle:" + this.angle);
-            console.log("111this.position:x:" + this.position.x + ",y:" + this.position.y);
-            this.position.x = this.position.x + Math.cos(this.angle) * movePoints;
-            this.position.y = this.position.y + Math.sin(this.angle) * movePoints;
-            console.log("222this.position:x:" + this.position.x + ",y:" + this.position.y);
-            console.log("this.points.length" + this.points.length);
-            console.log("this.length" + this.length);
+            // console.log("scale:" + this.scale);
+            // console.log("move time:" + deltaTime);
+            // console.log("move distance:" + distance);
+            // console.log("move movePoints:" + movePoints);
+            // console.log("this.angle:" + this.angle);
+            // console.log("111this.position:x:" + this.position.x + ",y:" + this.position.y);
+            this.position.x = this.position.x + Math.cos(this.angle) * distance;
+            this.position.y = this.position.y + Math.sin(this.angle) * distance;
+            // console.log("222this.position:x:" + this.position.x + ",y:" + this.position.y);
+            // console.log("this.points.length" + this.points.length);
+            // console.log("this.length" + this.length);
             if (this.points.length > this.length) {
                 this.points.pop();
             }
@@ -185,10 +183,10 @@ var game;
         Snake.BORN_BODY_LENGTH = 6;
         Snake.BORN_SCALE = 1;
         Snake.MAX_SCALE = 5;
-        Snake.VELOCITY_TO_TURN_ANGLE = 0.2;
-        Snake.VELOCITY_NORMAL = 12;
-        Snake.VELOCITY_FAST = 24;
-        Snake.BODY_POINT_DELTA_SCALE = 6;
+        Snake.VELOCITY_TO_TURN_ANGLE = 0.1;
+        Snake.VELOCITY_NORMAL = 100;
+        Snake.VELOCITY_FAST = Snake.VELOCITY_NORMAL * 2;
+        Snake.BODY_POINT_DELTA_SCALE = 10;
         Snake.ENERGY_PER_POINT = 20;
         Snake.ENERGY_SPEND_PER_SECOND = Snake.ENERGY_PER_POINT * 5;
         Snake.ENERGY_LIMIT_FOR_ACCELERATE = Snake.ENERGY_PER_POINT * 5;

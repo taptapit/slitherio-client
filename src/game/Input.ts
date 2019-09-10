@@ -11,15 +11,16 @@ module game {
 			return this.instance;
 		}
 
-		public isTouching : boolean;
+		private static TOUCH_MOVE_INTERVAL : number = 50;
+		private static DOUBLE_CLICK_INTERVAL : number = 400;
+
 		public isDoubleClick : boolean;
-		public lastTouchX : number;
-		public lastTouchY : number;
-		public lastDeltaX : number;
-		public lastDeltaY : number;
+		private lastTouchX : number;
+		private lastTouchY : number;
+
+		public isTouching : boolean;
 		public deltaX : number;
 		public deltaY : number;
-		public angle : number;
 
 		public constructor() {
 			egret.MainContext.instance.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchBegin, this);
@@ -31,7 +32,7 @@ module game {
 		public IsDoubleClick()
 		{
 			let curClickTime = egret.getTimer();
-			let value = !isNaN(this.lastClickTime) && (curClickTime - this.lastClickTime) < 400;
+			let value = !isNaN(this.lastClickTime) && (curClickTime - this.lastClickTime) < Input.DOUBLE_CLICK_INTERVAL;
 			this.lastClickTime = curClickTime;
 			return value;
 		}
@@ -42,19 +43,25 @@ module game {
 			this.isTouching = true;
 			this.lastTouchX = e.stageX;
 			this.lastTouchY = e.stageY;
-			console.log("onTouchBegin isDoubleClick:" + this.isDoubleClick);
+			// console.log("onTouchBegin isDoubleClick:" + this.isDoubleClick);
 		}
 
+		private touchMoveTime : number;
 		public onTouchMove(e: egret.TouchEvent)
 		{
-			this.lastDeltaX = this.deltaX;
-			this.lastDeltaY = this.deltaY;
-			this.deltaX = e.stageX - this.lastTouchX;
-			this.deltaY = e.stageY - this.lastTouchY;
-			this.lastTouchX = e.stageX;
-			this.lastTouchY = e.stageY;
+			let nowTime = egret.getTimer();
+			this.touchMoveTime = isNaN(this.touchMoveTime) ? nowTime : this.touchMoveTime; 
+			if(nowTime - this.touchMoveTime > Input.TOUCH_MOVE_INTERVAL)
+			{
+				this.touchMoveTime = nowTime;
 
-			console.log("onTouchMove:x:" + this.deltaX + ",y:" + this.deltaY);
+				this.deltaX = e.stageX - this.lastTouchX;
+				this.deltaY = e.stageY - this.lastTouchY;
+				this.lastTouchX = e.stageX;
+				this.lastTouchY = e.stageY;
+
+				// console.log("onTouchMove:x:" + this.deltaX + ",y:" + this.deltaY);
+			}
 		}
 
 		public onTouchEnd(e: egret.TouchEvent)
@@ -62,7 +69,7 @@ module game {
 			this.isTouching = false;
 			this.isDoubleClick = false;
 
-			console.log("onTouchEnd")
+			// console.log("onTouchEnd");
 		}
 
 	}

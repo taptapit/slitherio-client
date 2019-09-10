@@ -25,7 +25,8 @@ module game.renderer {
 
 		private removeSubRenderer(index)
 		{
-			this.subRenderers.splice(index, 1);
+			let subRenderer : egret.Sprite = this.subRenderers.splice(index, 1)[0];
+			this.removeChild(subRenderer);
 		}
 
 		public render()
@@ -48,7 +49,7 @@ module game.renderer {
 				// subRenderer.filters = TODO
 			}
 			//remove extra subRenderers
-			for(var i = this.data.points.length; i <= this.subRenderers.length; i++)
+			for(var i = this.data.points.length; i < this.subRenderers.length; i++)
 			{
 				this.removeSubRenderer(i);
 			}

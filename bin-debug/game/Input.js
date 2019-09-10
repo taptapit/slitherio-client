@@ -17,7 +17,7 @@ var game;
         };
         Input.prototype.IsDoubleClick = function () {
             var curClickTime = egret.getTimer();
-            var value = !isNaN(this.lastClickTime) && (curClickTime - this.lastClickTime) < 400;
+            var value = !isNaN(this.lastClickTime) && (curClickTime - this.lastClickTime) < Input.DOUBLE_CLICK_INTERVAL;
             this.lastClickTime = curClickTime;
             return value;
         };
@@ -26,22 +26,27 @@ var game;
             this.isTouching = true;
             this.lastTouchX = e.stageX;
             this.lastTouchY = e.stageY;
-            console.log("onTouchBegin isDoubleClick:" + this.isDoubleClick);
+            // console.log("onTouchBegin isDoubleClick:" + this.isDoubleClick);
         };
         Input.prototype.onTouchMove = function (e) {
-            this.lastDeltaX = this.deltaX;
-            this.lastDeltaY = this.deltaY;
-            this.deltaX = e.stageX - this.lastTouchX;
-            this.deltaY = e.stageY - this.lastTouchY;
-            this.lastTouchX = e.stageX;
-            this.lastTouchY = e.stageY;
-            console.log("onTouchMove:x:" + this.deltaX + ",y:" + this.deltaY);
+            var nowTime = egret.getTimer();
+            this.touchMoveTime = isNaN(this.touchMoveTime) ? nowTime : this.touchMoveTime;
+            if (nowTime - this.touchMoveTime > Input.TOUCH_MOVE_INTERVAL) {
+                this.touchMoveTime = nowTime;
+                this.deltaX = e.stageX - this.lastTouchX;
+                this.deltaY = e.stageY - this.lastTouchY;
+                this.lastTouchX = e.stageX;
+                this.lastTouchY = e.stageY;
+                // console.log("onTouchMove:x:" + this.deltaX + ",y:" + this.deltaY);
+            }
         };
         Input.prototype.onTouchEnd = function (e) {
             this.isTouching = false;
             this.isDoubleClick = false;
-            console.log("onTouchEnd");
+            // console.log("onTouchEnd");
         };
+        Input.TOUCH_MOVE_INTERVAL = 50;
+        Input.DOUBLE_CLICK_INTERVAL = 400;
         return Input;
     }());
     game.Input = Input;

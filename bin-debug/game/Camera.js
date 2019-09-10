@@ -11,13 +11,16 @@ var game;
             this.stageHeight = stageHeight;
         };
         Camera.update = function () {
-            var player = game.Context.player && game.Context.player.renderer;
+            var player = game.Context.player;
             var scene = game.Context.scene;
             if (player && scene) {
-                var sceneOffsetX = player.x - this.stageWith * 0.5;
-                var sceneOffsetY = player.y - this.stageHeight * 0.5;
+                var sceneOffsetX = player.position.x - this.stageWith * 0.5;
+                var sceneOffsetY = player.position.y - this.stageHeight * 0.5;
                 scene.x = -sceneOffsetX;
                 scene.y = -sceneOffsetY;
+                console.log("stageWith:" + this.stageWith + ",stageHeight:" + this.stageHeight);
+                console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
+                console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
                 this.viewPortMinX = scene.x;
                 this.viewPortMaxX = scene.x + this.stageWith;
                 this.viewPortMinY = scene.y;

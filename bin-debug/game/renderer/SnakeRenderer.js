@@ -31,7 +31,8 @@ var game;
                 return subRenderer;
             };
             SnakeRenderer.prototype.removeSubRenderer = function (index) {
-                this.subRenderers.splice(index, 1);
+                var subRenderer = this.subRenderers.splice(index, 1)[0];
+                this.removeChild(subRenderer);
             };
             SnakeRenderer.prototype.render = function () {
                 var snake = this.data;
@@ -51,7 +52,7 @@ var game;
                     // subRenderer.filters = TODO
                 }
                 //remove extra subRenderers
-                for (var i = this.data.points.length; i <= this.subRenderers.length; i++) {
+                for (var i = this.data.points.length; i < this.subRenderers.length; i++) {
                     this.removeSubRenderer(i);
                 }
             };
