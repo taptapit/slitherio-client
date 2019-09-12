@@ -1,5 +1,7 @@
 import ObjectPool = game.utils.ObjectPool
 import GameObjectManager = game.data.GameObjectManager
+import EventCenter = game.event.EventCenter;
+import GameEvent = game.event.GameEvent;
 
 module game {
 
@@ -131,7 +133,7 @@ module game {
 				while(this.points.length > this.length)
 				{
 					let point = this.points.pop();
-					FoodFactory.Create(point.x, point.y, Snake.ENERGY_PER_POINT);
+					EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT);
 				}
 			}else
 			{
@@ -241,9 +243,6 @@ module game {
 
 		public render()
 		{
-			let isVisible = Camera.isInViewPort(this.boundingBox);
-			console.log("isVisible:" + isVisible);
-
 			if(Camera.isInViewPort(this.boundingBox))
 			{
 				if(this.renderer)
@@ -256,7 +255,6 @@ module game {
 			{
 				if(this.renderer.parent) Context.snakeLayer.removeChild(this.renderer);
 			}
-			
 		}
 
 	}

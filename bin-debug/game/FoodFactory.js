@@ -8,7 +8,9 @@ var game;
         }
         FoodFactory.Create = function (x, y, energy, color) {
             if (color === void 0) { color = 0x000000; }
-            return new game.Food(FoodFactory.UUID++, x, y, energy, color);
+            var food = new game.Food(FoodFactory.UUID++, x, y, energy, color);
+            GameObjectManager.getInstance().foods.push(food);
+            return food;
         };
         FoodFactory.RandomCreate = function () {
             var rradius = Math.random() * 0.9;
@@ -16,7 +18,9 @@ var game;
             var x = game.World.RADIUS + game.World.RADIUS * rradius * Math.cos(rangle);
             var y = game.World.RADIUS + game.World.RADIUS * rradius * Math.sin(rangle);
             var renergy = Math.random();
-            return new game.Food(FoodFactory.UUID++, x, y, renergy, 0x000000);
+            var food = new game.Food(FoodFactory.UUID++, x, y, renergy, 0x000000);
+            GameObjectManager.getInstance().foods.push(food);
+            return food;
         };
         FoodFactory.UUID = 1;
         return FoodFactory;

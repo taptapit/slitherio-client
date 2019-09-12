@@ -64,11 +64,20 @@ module game {
 			this.player = SnakeFactory.RandomCreate();
 			Context.player = this.player;
 			GameObjectManager.getInstance().snakes.push(this.player);
+
+			EventCenter.addListener(GameEvent.CREATE_FOOD, this.createFood, this);
 		}
 
 		public stop()
 		{
 			this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+			EventCenter.removeListener(GameEvent.CREATE_FOOD, this.createFood);
+		}
+
+		public createFood(x:number, y:number, energy:number)
+		{
+			console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy);
+			FoodFactory.Create(x, y, Snake.ENERGY_PER_POINT);
 		}
 
 		private lastTick : number;
@@ -82,7 +91,7 @@ module game {
 			this.deltaTime = this.currentTick - this.lastTick;
 			this.lastTick = this.currentTick;
 
-			console.log("onEnterFrame:" + this.deltaTime);
+			// console.log("onEnterFrame:" + this.deltaTime);
 
 			this.update();
 			this.render();
@@ -90,7 +99,9 @@ module game {
 
 		private update()
 		{
-			FoodFactory.RandomCreate();
+			Camera.update();
+
+			// FoodFactory.RandomCreate();
 			this.updateMiniMap();
 			this.updateOperation();
 
@@ -126,7 +137,7 @@ module game {
 				if (this.deltaX != this.lastDeltaX || this.deltaY != this.lastDeltaY)
 				{
 					this.player.targetAngle = Math.atan2(this.deltaY, this.deltaX);
-					console.log("updateTargetAngle targetAngle:" + this.player.targetAngle);
+					// console.log("updateTargetAngle targetAngle:" + this.player.targetAngle);
 				}
 
 				this.player.isAccelerate = Input.getInstance().isDoubleClick;
@@ -151,8 +162,6 @@ module game {
 			{
 				foods[i].render();
 			}
-
-			Camera.update();
 		}
 
 	}

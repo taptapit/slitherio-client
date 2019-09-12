@@ -9,18 +9,33 @@ var game;
             if (eatenBy === void 0) { eatenBy = null; }
             this.x = x;
             this.y = y;
+            this.position = new egret.Point(x, y);
             this.energy = energy;
             this.scale = Food.energy2Scale(energy);
             this.color = color;
             this.eaten = eaten;
             this.eatenBy = eatenBy;
+            this.renderer = new game.renderer.FoodRenderer(this);
         }
         Food.energy2Scale = function (energy) {
-            return energy * 0.001;
+            return energy * 0.01;
         };
         Food.prototype.update = function (deltaTime) {
         };
         Food.prototype.render = function () {
+            var isInView = game.Camera.isInViewPort(this.position);
+            console.log("food is in view:" + isInView);
+            if (game.Camera.isInViewPort(this.position)) {
+                if (this.renderer) {
+                    if (!this.renderer.parent)
+                        game.Context.snakeLayer.addChild(this.renderer);
+                    this.renderer.render();
+                }
+            }
+            else {
+                if (this.renderer.parent)
+                    game.Context.snakeLayer.removeChild(this.renderer);
+            }
         };
         return Food;
     }());

@@ -38,7 +38,7 @@ module game.renderer {
 			for(var i = 0; i < this.data.points.length; i++)
 			{
 				snakePoint = this.data.points[i];
-				console.log("snakePoint:" + snakePoint);
+				// console.log("snakePoint:" + snakePoint);
 				subRenderer = this.subRenderers.length > i ? this.subRenderers[i] : this.createSubRenderer();
 				subRenderer.scaleX = snake.scale;
 				subRenderer.scaleY = snake.scale;

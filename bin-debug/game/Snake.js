@@ -3,6 +3,8 @@ var __reflect = (this && this.__reflect) || function (p, c, t) {
 };
 var ObjectPool = game.utils.ObjectPool;
 var GameObjectManager = game.data.GameObjectManager;
+var EventCenter = game.event.EventCenter;
+var GameEvent = game.event.GameEvent;
 var game;
 (function (game) {
     var Snake = (function () {
@@ -77,7 +79,7 @@ var game;
                 this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
                 while (this.points.length > this.length) {
                     var point = this.points.pop();
-                    game.FoodFactory.Create(point.x, point.y, Snake.ENERGY_PER_POINT);
+                    EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT);
                 }
             }
             else {
@@ -165,8 +167,6 @@ var game;
             this.boundingBox.setTo(minX - radius, minY - radius, maxX - minX, maxY - minY);
         };
         Snake.prototype.render = function () {
-            var isVisible = game.Camera.isInViewPort(this.boundingBox);
-            console.log("isVisible:" + isVisible);
             if (game.Camera.isInViewPort(this.boundingBox)) {
                 if (this.renderer) {
                     if (!this.renderer.parent)

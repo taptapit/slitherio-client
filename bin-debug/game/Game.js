@@ -54,9 +54,15 @@ var game;
             this.player = game.SnakeFactory.RandomCreate();
             game.Context.player = this.player;
             GameObjectManager.getInstance().snakes.push(this.player);
+            EventCenter.addListener(GameEvent.CREATE_FOOD, this.createFood, this);
         };
         Game.prototype.stop = function () {
             this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+            EventCenter.removeListener(GameEvent.CREATE_FOOD, this.createFood);
+        };
+        Game.prototype.createFood = function (x, y, energy) {
+            console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy);
+            game.FoodFactory.Create(x, y, game.Snake.ENERGY_PER_POINT);
         };
         Game.prototype.onEnterFrame = function (event) {
             if (isNaN(this.lastTick))
@@ -66,12 +72,13 @@ var game;
             this.currentTick = egret.getTimer() * 0.001;
             this.deltaTime = this.currentTick - this.lastTick;
             this.lastTick = this.currentTick;
-            console.log("onEnterFrame:" + this.deltaTime);
+            // console.log("onEnterFrame:" + this.deltaTime);
             this.update();
             this.render();
         };
         Game.prototype.update = function () {
-            game.FoodFactory.RandomCreate();
+            game.Camera.update();
+            // FoodFactory.RandomCreate();
             this.updateMiniMap();
             this.updateOperation();
             if (this.player && !this.player.isDead) {
@@ -112,7 +119,6 @@ var game;
             for (var i = 0; i < foods.length; i++) {
                 foods[i].render();
             }
-            game.Camera.update();
         };
         return Game;
     }(egret.DisplayObjectContainer));
