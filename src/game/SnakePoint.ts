@@ -5,6 +5,7 @@ module game {
 		public id : number;
 		public dyingAlpha : number;
 		public isDying : boolean;
+		public color :number;
 
 		public constructor() {
 		}

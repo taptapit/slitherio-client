@@ -6,10 +6,10 @@ import GameEvent = game.event.GameEvent;
 module game {
 
 	export class Snake {
-		public static BODY_SIZE = 10;
+		public static BODY_SIZE = 30;
 		public static BORN_BODY_LENGTH = 6;
 		private static BORN_SCALE = 1;
-		private static MAX_SCALE = 5;
+		public static MAX_SCALE = 5;
 		private static VELOCITY_TO_TURN_ANGLE = 0.1;
 		public static VELOCITY_NORMAL = 100;
 		public static VELOCITY_FAST = Snake.VELOCITY_NORMAL * 2;
@@ -17,6 +17,7 @@ module game {
 		public static ENERGY_PER_POINT = 20;
 		public static ENERGY_SPEND_PER_SECOND = Snake.ENERGY_PER_POINT * 5;
 		public static ENERGY_LIMIT_FOR_ACCELERATE = Snake.ENERGY_PER_POINT * 5;
+		public static FOOD_DETECT_DISTANCE = 50;
 		
 		public id : number;
 		public position : egret.Point;
@@ -60,6 +61,11 @@ module game {
 			return Math.floor(energy / Snake.ENERGY_PER_POINT);
 		}
 
+		public radius()
+		{
+			return Snake.BODY_SIZE * this.scale * 0.5;
+		}
+
 		public constructor(id, name, position, angle, velocity, points = null, skin = 0, energy = 0) {
 			this.id = id;
 			this.name = name;
@@ -78,13 +84,41 @@ module game {
 			this.renderer = new renderer.SnakeRenderer(this);
 		}
 
-		public dead()
+		public hitTest(target:SnakePoint | Food)
 		{
+			if(target instanceof SnakePoint)
+			{
+				let point:SnakePoint = target;
+				let otherSnake : Snake = GameObjectManager.getInstance().get(point.id);
+				return otherSnake && 
+					!otherSnake.isDead && 
+					Math.pow(this.position.x - point.x, 2) + Math.pow(this.position.y - point.y, 2) < Math.pow(this.radius() + otherSnake.radius(), 2);
+			}else if(target instanceof Food)
+			{
+				let food:Food = target;
+				return Math.pow(this.position.x - food.position.x, 2) + Math.pow(this.position.y - food.position.y, 2) < Math.pow(this.radius() + food.scale + Snake.FOOD_DETECT_DISTANCE, 2);
+			}else
+			{
+				console.error("snake hitTest on unkown type target" + target);
+			}
 		}
 
-		public eat(energy)
+		public dead()
 		{
-			this.energy += energy;
+			this.isDead = true;
+			
+			while(this.points.length > 0)
+			{
+				let point = this.points.pop();
+				EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT, point.color);
+			}
+		}
+
+		public eat(food:Food)
+		{
+			GameObjectManager.getInstance().remove(food);
+
+			this.energy += food.energy;
 			this.length = Snake.energy2Length(this.energy);
 			this.scale = Snake.length2Scale(this.length);
 			this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
@@ -133,7 +167,7 @@ module game {
 				while(this.points.length > this.length)
 				{
 					let point = this.points.pop();
-					EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT);
+					EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT, point.color);
 				}
 			}else
 			{
@@ -202,6 +236,7 @@ module game {
 					let point = ObjectPool.get(SnakePoint);
 					point.x = this.position.x;
 					point.y = this.position.y;
+					point.color = 0x00ffff;
 					this.points.unshift(point);
 				}else
 				{
@@ -247,13 +282,13 @@ module game {
 			{
 				if(this.renderer)
 				{
-					if(!this.renderer.parent) Context.snakeLayer.addChild(this.renderer);
+					if(!this.renderer.parent) GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
 					
 					this.renderer.render();
 				}
 			}else
 			{
-				if(this.renderer.parent) Context.snakeLayer.removeChild(this.renderer);
+				if(this.renderer.parent) GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
 			}
 		}
 

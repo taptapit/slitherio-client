@@ -14,7 +14,6 @@ var game;
         __extends(World, _super);
         function World() {
             var _this = _super.call(this) || this;
-            // this.addEventListener(egret.Event.ADDED_TO_STAGE,this.onAddToStage,this);
             _this.onAddToStage();
             return _this;
         }
@@ -30,14 +29,15 @@ var game;
                 shp.x = x;
                 shp.y = y;
                 shp.rotation = degree + 90;
+                shp.cacheAsBitmap = true;
                 this.addChild(shp);
             }
         };
-        World.EDGE_SEGMENT_WIDTH = 20;
-        World.EDGE_SEGMENT_HEIGHT = 10;
+        World.EDGE_SEGMENT_WIDTH = 200;
+        World.EDGE_SEGMENT_HEIGHT = 100;
         World.EDGE_SEGMENT_COLOR = 0x2D2D2D;
-        World.EDGE_SEGMENT_NUM = 60;
-        World.RADIUS = 100;
+        World.EDGE_SEGMENT_NUM = 120;
+        World.RADIUS = 1000;
         World.DEG_TO_RAD = 2 * Math.PI / 360;
         return World;
     }(egret.Sprite));

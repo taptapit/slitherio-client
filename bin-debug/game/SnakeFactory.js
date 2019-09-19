@@ -7,7 +7,7 @@ var game;
         function SnakeFactory() {
         }
         SnakeFactory.RandomCreate = function () {
-            var snake = new game.Snake(SnakeFactory.UUID++, "None", egret.Point.create(0, 0), 0, game.Snake.VELOCITY_NORMAL, null, 0, 120);
+            var snake = new game.Snake(GameObjectManager.UUID++, "None", egret.Point.create(0, 0), 0, game.Snake.VELOCITY_NORMAL, null, 0, 120);
             var points = [];
             var scale = game.Snake.length2Scale(game.Snake.BORN_BODY_LENGTH);
             snake.scale = scale;
@@ -16,12 +16,13 @@ var game;
                 var point = new game.SnakePoint();
                 point.x = game.Snake.BODY_POINT_DELTA_SCALE * scale * Math.cos(angle) * i;
                 point.y = game.Snake.BODY_POINT_DELTA_SCALE * scale * Math.sin(angle) * i;
+                point.color = 0x00ffff;
                 points.push(point);
             }
             snake.points = points;
+            GameObjectManager.getInstance().add(snake);
             return snake;
         };
-        SnakeFactory.UUID = 1;
         return SnakeFactory;
     }());
     game.SnakeFactory = SnakeFactory;

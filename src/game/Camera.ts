@@ -24,8 +24,8 @@ module game {
 
 		public static update()
 		{
-			let player = Context.player;
-			let scene = Context.scene;
+			let player = GameObjectManager.getInstance().player;
+			let scene = GameLayerManager.getInstance().scene;
 			if (player && scene)
 			{
 				let sceneOffsetX = player.position.x - this.stageWith * 0.5;
@@ -37,10 +37,10 @@ module game {
 				// console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
 				// console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
 
-				this.viewPortMinX = scene.x;
-				this.viewPortMaxX = scene.x +this.stageWith;
-				this.viewPortMinY = scene.y;
-				this.viewPortMaxY = scene.y +this.stageHeight;
+				this.viewPortMinX = sceneOffsetX;
+				this.viewPortMaxX = sceneOffsetX +this.stageWith;
+				this.viewPortMinY = sceneOffsetY;
+				this.viewPortMaxY = sceneOffsetY +this.stageHeight;
 
 				this.viewPortRect = this.viewPortRect ? this.viewPortRect : new egret.Rectangle();
 				this.viewPortRect.setTo(this.viewPortMinX, this.viewPortMinY, this.stageWith, this.stageHeight);

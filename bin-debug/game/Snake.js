@@ -41,10 +41,35 @@ var game;
         Snake.energy2Length = function (energy) {
             return Math.floor(energy / Snake.ENERGY_PER_POINT);
         };
-        Snake.prototype.dead = function () {
+        Snake.prototype.radius = function () {
+            return Snake.BODY_SIZE * this.scale * 0.5;
         };
-        Snake.prototype.eat = function (energy) {
-            this.energy += energy;
+        Snake.prototype.hitTest = function (target) {
+            if (target instanceof game.SnakePoint) {
+                var point = target;
+                var otherSnake = GameObjectManager.getInstance().get(point.id);
+                return otherSnake &&
+                    !otherSnake.isDead &&
+                    Math.pow(this.position.x - point.x, 2) + Math.pow(this.position.y - point.y, 2) < Math.pow(this.radius() + otherSnake.radius(), 2);
+            }
+            else if (target instanceof game.Food) {
+                var food = target;
+                return Math.pow(this.position.x - food.position.x, 2) + Math.pow(this.position.y - food.position.y, 2) < Math.pow(this.radius() + food.scale + Snake.FOOD_DETECT_DISTANCE, 2);
+            }
+            else {
+                console.error("snake hitTest on unkown type target" + target);
+            }
+        };
+        Snake.prototype.dead = function () {
+            this.isDead = true;
+            while (this.points.length > 0) {
+                var point = this.points.pop();
+                EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT, point.color);
+            }
+        };
+        Snake.prototype.eat = function (food) {
+            GameObjectManager.getInstance().remove(food);
+            this.energy += food.energy;
             this.length = Snake.energy2Length(this.energy);
             this.scale = Snake.length2Scale(this.length);
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
@@ -79,7 +104,7 @@ var game;
                 this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
                 while (this.points.length > this.length) {
                     var point = this.points.pop();
-                    EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT);
+                    EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT, point.color);
                 }
             }
             else {
@@ -136,6 +161,7 @@ var game;
                     var point = ObjectPool.get(game.SnakePoint);
                     point.x = this.position.x;
                     point.y = this.position.y;
+                    point.color = 0x00ffff;
                     this.points.unshift(point);
                 }
                 else {
@@ -170,16 +196,16 @@ var game;
             if (game.Camera.isInViewPort(this.boundingBox)) {
                 if (this.renderer) {
                     if (!this.renderer.parent)
-                        game.Context.snakeLayer.addChild(this.renderer);
+                        GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
                     this.renderer.render();
                 }
             }
             else {
                 if (this.renderer.parent)
-                    game.Context.snakeLayer.removeChild(this.renderer);
+                    GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
             }
         };
-        Snake.BODY_SIZE = 10;
+        Snake.BODY_SIZE = 30;
         Snake.BORN_BODY_LENGTH = 6;
         Snake.BORN_SCALE = 1;
         Snake.MAX_SCALE = 5;
@@ -190,6 +216,7 @@ var game;
         Snake.ENERGY_PER_POINT = 20;
         Snake.ENERGY_SPEND_PER_SECOND = Snake.ENERGY_PER_POINT * 5;
         Snake.ENERGY_LIMIT_FOR_ACCELERATE = Snake.ENERGY_PER_POINT * 5;
+        Snake.FOOD_DETECT_DISTANCE = 50;
         return Snake;
     }());
     game.Snake = Snake;

@@ -11,8 +11,8 @@ var game;
             this.stageHeight = stageHeight;
         };
         Camera.update = function () {
-            var player = game.Context.player;
-            var scene = game.Context.scene;
+            var player = GameObjectManager.getInstance().player;
+            var scene = GameLayerManager.getInstance().scene;
             if (player && scene) {
                 var sceneOffsetX = player.position.x - this.stageWith * 0.5;
                 var sceneOffsetY = player.position.y - this.stageHeight * 0.5;
@@ -21,10 +21,10 @@ var game;
                 // console.log("stageWith:" + this.stageWith + ",stageHeight:" + this.stageHeight);
                 // console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
                 // console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
-                this.viewPortMinX = scene.x;
-                this.viewPortMaxX = scene.x + this.stageWith;
-                this.viewPortMinY = scene.y;
-                this.viewPortMaxY = scene.y + this.stageHeight;
+                this.viewPortMinX = sceneOffsetX;
+                this.viewPortMaxX = sceneOffsetX + this.stageWith;
+                this.viewPortMinY = sceneOffsetY;
+                this.viewPortMaxY = sceneOffsetY + this.stageHeight;
                 this.viewPortRect = this.viewPortRect ? this.viewPortRect : new egret.Rectangle();
                 this.viewPortRect.setTo(this.viewPortMinX, this.viewPortMinY, this.stageWith, this.stageHeight);
                 this.viewPortCenterX = (this.viewPortMaxX - this.viewPortMinX) * 0.5;

@@ -1,3 +1,7 @@
+import GameLayerManager = game.utils.GameLayerManager;
+import WorldNodeManager = game.data.WorldNodeManager;
+import WorldNode = game.data.WorldNode;
+
 module game {
 	export class Game extends egret.DisplayObjectContainer {
 
@@ -5,7 +9,6 @@ module game {
 
 		public constructor(container) {
 			super();
-			// this.addChild(egret.MainContext.instance.stage);
 			container.addChild(this);
 
 			this.setup();
@@ -29,29 +32,32 @@ module game {
 			let scene = new egret.DisplayObjectContainer();
 			scene.touchEnabled = false;
 			this.addChild(scene);
+			GameLayerManager.getInstance().scene = scene;
 
 			let world = new game.World();
         	world.touchEnabled = false;
 			scene.addChild(world);
+			GameLayerManager.getInstance().world = world;
 
 			let underUILayer = new egret.DisplayObjectContainer();
 			underUILayer.touchEnabled = false;
 			scene.addChild(underUILayer);
+			GameLayerManager.getInstance().underUILayer = underUILayer;
 
-			let footLayer = new egret.DisplayObjectContainer();
-			footLayer.touchEnabled = false;
-			scene.addChild(footLayer);
+			let foodLayer = new egret.DisplayObjectContainer();
+			foodLayer.touchEnabled = false;
+			scene.addChild(foodLayer);
+			GameLayerManager.getInstance().foodLayer = foodLayer;
 
 			let snakeLayer = new egret.DisplayObjectContainer();
 			snakeLayer.touchEnabled = false;
 			scene.addChild(snakeLayer);
+			GameLayerManager.getInstance().snakeLayer = snakeLayer;
 
 			let aboveUILayer = new egret.DisplayObjectContainer();
 			aboveUILayer.touchEnabled = false;
 			this.addChild(aboveUILayer);
-
-			Context.scene = scene;
-			Context.snakeLayer = snakeLayer;
+			GameLayerManager.getInstance().aboveUILayer = aboveUILayer;
 
 			Camera.resize(egret.MainContext.instance.stage.stageWidth, egret.MainContext.instance.stage.stageHeight);
 		}
@@ -60,10 +66,20 @@ module game {
 		{
 			console.log("start");
 			this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+			egret.lifecycle.onPause = ()=> {
+				console.log("onPause");
+				this.lastTick = NaN;
+				this.currentTick = NaN;
+				this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+			}
+			egret.lifecycle.onResume = ()=> {
+				console.log("onResume");
+				this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
+			}
 
 			this.player = SnakeFactory.RandomCreate();
-			Context.player = this.player;
-			GameObjectManager.getInstance().snakes.push(this.player);
+			GameObjectManager.getInstance().player = this.player;
+			GameObjectManager.getInstance().add(this.player);
 
 			EventCenter.addListener(GameEvent.CREATE_FOOD, this.createFood, this);
 		}
@@ -72,12 +88,14 @@ module game {
 		{
 			this.removeEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
 			EventCenter.removeListener(GameEvent.CREATE_FOOD, this.createFood);
+			egret.lifecycle.onPause = null;
+			egret.lifecycle.onResume = null;
 		}
 
-		public createFood(x:number, y:number, energy:number)
+		public createFood(x:number, y:number, energy:number, color:number)
 		{
-			console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy);
-			FoodFactory.Create(x, y, Snake.ENERGY_PER_POINT);
+			console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy + ",color:" + color);
+			FoodFactory.Create(x, y, energy, color);
 		}
 
 		private lastTick : number;
@@ -90,7 +108,6 @@ module game {
 			this.currentTick = egret.getTimer() * 0.001;
 			this.deltaTime = this.currentTick - this.lastTick;
 			this.lastTick = this.currentTick;
-
 			// console.log("onEnterFrame:" + this.deltaTime);
 
 			this.update();
@@ -101,24 +118,107 @@ module game {
 		{
 			Camera.update();
 
+			// this.updateWorldNode();
 			// FoodFactory.RandomCreate();
 			this.updateMiniMap();
 			this.updateOperation();
 
 			if(this.player && !this.player.isDead)
 			{
-				this.player.eat(1);
+				let food = FoodFactory.RandomCreate();
+				food.energy = 1;
+				this.player.eat(food);
 			}
 
 			let snakes = GameObjectManager.getInstance().snakes;
-			let foods = GameObjectManager.getInstance().foods;
-			for(var i = 0 ; i <= snakes.length - 1; i++)
+			for(let key in snakes)
 			{
-				snakes[i].update(this.deltaTime);
+				(snakes[key] as Snake).update(this.deltaTime);
 			}
-			for(var i = 0 ; i <= foods.length - 1; i++)
+
+			let foods = GameObjectManager.getInstance().foods;
+			for(let key in foods)
 			{
-				foods[i].update(this.deltaTime);
+				(foods[key] as Food).update(this.deltaTime);
+			}
+		}
+
+		public updateWorldNode()
+		{
+			let nodes = WorldNodeManager.getInstance().nodes;
+			let snakes = GameObjectManager.getInstance().snakes;
+			let foods = GameObjectManager.getInstance().foods;
+
+			for(let key in nodes)
+			{
+				(nodes[key] as WorldNode).Reset();
+			}
+
+			for(let index in snakes)
+			{
+				let snake = snakes[index];
+				let node = WorldNodeManager.getInstance().get(Math.floor(snake.position.x/WorldNode.SIDE_LENGTH), Math.floor(snake.position.y/WorldNode.SIDE_LENGTH), true);
+				node.snakes.push(snake);
+
+				for(let index in snake.points)
+				{
+					let point = snake.points[index];
+					let node = WorldNodeManager.getInstance().get(Math.floor(point.x/WorldNode.SIDE_LENGTH), Math.floor(point.y/WorldNode.SIDE_LENGTH), true);
+					node.snakesPoints.push(point);
+				}
+			}
+
+			for(let index in foods)
+			{
+				let food = foods[index];
+				let node = WorldNodeManager.getInstance().get(Math.floor(food.position.x/WorldNode.SIDE_LENGTH), Math.floor(food.position.y/WorldNode.SIDE_LENGTH), true);
+				node.foods.push(food);
+			}
+
+			for(let index in nodes)
+			{
+				let node:WorldNode = nodes[index];
+
+				for(let i = 0; i < node.snakes.length; i++)
+				{
+					let snake = node.snakes[i];
+					if(!snake.isDead)
+					{
+						if((Math.pow(snake.position.x - World.RADIUS, 2) + Math.pow(snake.position.y - World.RADIUS, 2)) > Math.pow(World.RADIUS - snake.radius(), 2)) snake.isDead = true;
+					}
+
+					for(let i = 0; i <= 9; i++)
+					{
+						let nearbyNode = WorldNodeManager.getInstance().get(node.column-1 + i%3, node.row-1 + Math.floor(i/3));
+						if(nearbyNode)
+						{
+							for(let index in nearbyNode.foods)
+							{
+								let food = nearbyNode.foods[index];
+								if(!snake.isDead && !food.eaten && snake.hitTest(food))
+								{
+									food.eaten = true;
+									food.eatenBy = snake;
+									food.eatenAlpha = 0;
+
+									snake.eat(food);
+								}
+							}
+
+							for(let index in nearbyNode.snakesPoints)
+							{
+								let point = nearbyNode.snakesPoints[index];
+								if(snake.id == point.id)continue;
+
+								if(!snake.isDead && snake.hitTest(point)) 
+								{
+									snake.dead();
+								}
+							}
+						}
+					}
+				}
+				
 			}
 		}
 
@@ -154,13 +254,14 @@ module game {
 		{
 			let snakes = GameObjectManager.getInstance().snakes;
 			let foods = GameObjectManager.getInstance().foods;
-			for(var i = 0 ; i < snakes.length; i++)
+
+			for(let key in snakes)
 			{
-				snakes[i].render();
+				snakes[key].render();
 			}
-			for(var i = 0 ; i < foods.length; i++)
+			for(let key in foods)
 			{
-				foods[i].render();
+				foods[key].render();
 			}
 		}
 
