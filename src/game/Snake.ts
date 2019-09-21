@@ -2,18 +2,19 @@ import ObjectPool = game.utils.ObjectPool
 import GameObjectManager = game.data.GameObjectManager
 import EventCenter = game.event.EventCenter;
 import GameEvent = game.event.GameEvent;
+import ColorUtils = game.utils.ColorUtils;
 
 module game {
 
 	export class Snake {
-		public static BODY_SIZE = 30;
+		public static BODY_SIZE = 100;
 		public static BORN_BODY_LENGTH = 6;
-		private static BORN_SCALE = 1;
-		public static MAX_SCALE = 5;
+		private static BORN_SCALE = 0.2;
+		public static MAX_SCALE = 1;
 		private static VELOCITY_TO_TURN_ANGLE = 0.1;
-		public static VELOCITY_NORMAL = 100;
+		public static VELOCITY_NORMAL = 200;
 		public static VELOCITY_FAST = Snake.VELOCITY_NORMAL * 2;
-		public static BODY_POINT_DELTA_SCALE = 10;
+		public static BODY_POINT_DELTA_SCALE = 50;
 		public static ENERGY_PER_POINT = 20;
 		public static ENERGY_SPEND_PER_SECOND = Snake.ENERGY_PER_POINT * 5;
 		public static ENERGY_LIMIT_FOR_ACCELERATE = Snake.ENERGY_PER_POINT * 5;
@@ -27,10 +28,9 @@ module game {
 		public velocity : number;
 		public scale : number;
 		public angle : number;
-		public turnAngle : number;
 		public scaleTurnAngle : number;
 		public velocityTurnAngle : number;
-		public isDead : boolean;
+		public dead : boolean;
 		public dyingAlpha : number;
 		public energy : number;
 		public length : number;
@@ -38,7 +38,19 @@ module game {
 		public isAccelerate : boolean;
 		public renderer : renderer.SnakeRenderer;
 		public isInView : boolean;
-		public boundingBox : egret.Rectangle;
+		public ai : ai.SnakeAI;
+
+		public static skinColor(skin:number, index:number)
+		{
+			let startColor = ColorUtils.COLORS[skin];
+			let endColor = ColorUtils.lerp(startColor, 0xC4C4C4, 0.7);
+			let delta = 0x080808;
+			let progress = index * delta / Math.abs(endColor-startColor);
+			let direction = Math.floor(progress) % 2 == 0;
+			progress = progress - Math.floor(progress);
+
+			return direction ? ColorUtils.lerp(startColor, endColor, progress) : ColorUtils.lerp(endColor, startColor, progress);
+		}
 
 		public static length2Scale(length)
 		{
@@ -80,43 +92,51 @@ module game {
 			this.length = Snake.energy2Length(energy);
 			this.scale = Snake.length2Scale(this.length);
 			this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
-			this.boundingBox = egret.Rectangle.create();
 			this.renderer = new renderer.SnakeRenderer(this);
+		}
+
+		public dispose()
+		{
+			this.ai = null;
+			if(this.renderer.parent) GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
+			GameObjectManager.getInstance().remove(this);
 		}
 
 		public hitTest(target:SnakePoint | Food)
 		{
 			if(target instanceof SnakePoint)
 			{
-				let point:SnakePoint = target;
+				let point:SnakePoint = target as SnakePoint;
 				let otherSnake : Snake = GameObjectManager.getInstance().get(point.id);
 				return otherSnake && 
-					!otherSnake.isDead && 
+					!otherSnake.dead && 
 					Math.pow(this.position.x - point.x, 2) + Math.pow(this.position.y - point.y, 2) < Math.pow(this.radius() + otherSnake.radius(), 2);
 			}else if(target instanceof Food)
 			{
-				let food:Food = target;
-				return Math.pow(this.position.x - food.position.x, 2) + Math.pow(this.position.y - food.position.y, 2) < Math.pow(this.radius() + food.scale + Snake.FOOD_DETECT_DISTANCE, 2);
+				let food:Food = target as Food;
+				return Math.pow(this.position.x - food.position.x, 2) + Math.pow(this.position.y - food.position.y, 2) < Math.pow(this.radius() + food.radius() + Snake.FOOD_DETECT_DISTANCE, 2);
 			}else
 			{
 				console.error("snake hitTest on unkown type target" + target);
 			}
 		}
 
-		public dead()
+		public die()
 		{
-			this.isDead = true;
+			this.dead = true;
+			this.dispose();
 			
 			while(this.points.length > 0)
 			{
 				let point = this.points.pop();
-				EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT, point.color);
+				ObjectPool.release(SnakePoint, point);
+				EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT * 0.5, point.color);
 			}
 		}
 
 		public eat(food:Food)
 		{
-			GameObjectManager.getInstance().remove(food);
+			food.eatBy(this);
 
 			this.energy += food.energy;
 			this.length = Snake.energy2Length(this.energy);
@@ -140,7 +160,7 @@ module game {
 
 		public updateDying(deltaTime)
 		{
-			if(this.isDead)
+			if(this.dead)
 			{
 				this.dyingAlpha += deltaTime * 0.02;
 				if(this.dyingAlpha >= 1)
@@ -167,7 +187,8 @@ module game {
 				while(this.points.length > this.length)
 				{
 					let point = this.points.pop();
-					EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT, point.color);
+					ObjectPool.release(SnakePoint, point);
+					EventCenter.dispatch(GameEvent.CREATE_FOOD, point.x, point.y, Snake.ENERGY_PER_POINT * 0.5, point.color);
 				}
 			}else
 			{
@@ -210,7 +231,7 @@ module game {
 		{
 			let distance = this.velocity * deltaTime;
 			let deltaPoint = this.scale * Snake.BODY_POINT_DELTA_SCALE;
-			let movePoints = distance / deltaPoint;
+			let moveRatio = Math.min(1, distance / deltaPoint);
 			
 			// console.log("scale:" + this.scale);
 			// console.log("move time:" + deltaTime);
@@ -228,67 +249,40 @@ module game {
 			// console.log("this.length" + this.length);
 			if(this.points.length > this.length)
 			{
-				this.points.pop();
+				ObjectPool.release(SnakePoint, this.points.pop());
 			}else
 			{
 				if(this.points.length < this.length)
 				{
 					let point = ObjectPool.get(SnakePoint);
-					point.x = this.position.x;
-					point.y = this.position.y;
-					point.color = 0x00ffff;
-					this.points.unshift(point);
-				}else
-				{
-					for(var i = this.points.length-1; i > 0; i--)
-					{
-						var p = this.points[i];
-						var q = this.points[i-1];
-						p.x = p.x + (q.x - p.x) * movePoints;
-						p.y = p.y + (q.y - p.y) * movePoints;
-					}
-					
-					this.points[0].x = this.position.x;
-					this.points[0].y = this.position.y;
+					let tailPoint = this.points[this.points.length-1];
+					point.id = this.id;
+					point.x = tailPoint ? tailPoint.x : 0;
+					point.y = tailPoint ? tailPoint.y : 0;
+					point.color = Snake.skinColor(this.skin, this.points.length);
+					this.points.push(point);
 				}
+
+				for(var i = this.points.length-1; i > 0; i--)
+				{
+					var p = this.points[i];
+					var q = this.points[i-1];
+					p.x = p.x + (q.x - p.x) * moveRatio;
+					p.y = p.y + (q.y - p.y) * moveRatio;
+				}
+				
+				this.points[0].x = this.position.x;
+				this.points[0].y = this.position.y;
 			}
-			
-		}
-
-		public updateBoundingBox()
-		{
-			let minX :number;
-			let minY :number;
-			let maxX :number;
-			let maxY :number;
-			let point : SnakePoint;
-			let radius : number = this.scale;
-
-			for(var i = 0; i <= this.points.length; i++)
-			{
-				point = this.points[i];
-				minX = isNaN(minX) ? point.x : Math.min(minX, point.x);
-				minY = isNaN(minY) ? point.y : Math.min(minY, point.y);
-				maxX = isNaN(maxX) ? point.x : Math.max(minX, point.x);
-				maxY = isNaN(maxY) ? point.y : Math.max(minY, point.y);
-			}
-
-			this.boundingBox.setTo(minX-radius, minY-radius, maxX-minX, maxY-minY);
 		}
 
 		public render()
 		{
-			if(Camera.isInViewPort(this.boundingBox))
+			if(this.renderer)
 			{
-				if(this.renderer)
-				{
-					if(!this.renderer.parent) GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
-					
-					this.renderer.render();
-				}
-			}else
-			{
-				if(this.renderer.parent) GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
+				if(!this.renderer.parent) GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
+				
+				this.renderer.render();
 			}
 		}
 

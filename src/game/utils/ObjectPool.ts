@@ -3,18 +3,25 @@ module game.utils {
 		public constructor() {
 		}
 
-		public static _construct(cls)
+		private static pools = new Object();
+
+		private static construct(cls)
 		{
 			return new cls();
 		}
 
 		public static get(cls:any): any {
-			return ObjectPool._construct(cls);
+			let pool : any[] = this.pools[cls] = this.pools[cls] ? this.pools[cls] : [];
+			if(pool.length > 0)
+				return pool.pop();
+			else
+				return ObjectPool.construct(cls);
 		}
 
-		public static release(object:any)
+		public static release(cls:any, object:Object)
 		{
-
+			let pool : any[] = this.pools[cls];
+			pool.push(object);
 		}
 
 	}

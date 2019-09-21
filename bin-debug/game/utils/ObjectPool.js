@@ -8,14 +8,21 @@ var game;
         var ObjectPool = (function () {
             function ObjectPool() {
             }
-            ObjectPool._construct = function (cls) {
+            ObjectPool.construct = function (cls) {
                 return new cls();
             };
             ObjectPool.get = function (cls) {
-                return ObjectPool._construct(cls);
+                var pool = this.pools[cls] = this.pools[cls] ? this.pools[cls] : [];
+                if (pool.length > 0)
+                    return pool.pop();
+                else
+                    return ObjectPool.construct(cls);
             };
-            ObjectPool.release = function (object) {
+            ObjectPool.release = function (cls, object) {
+                var pool = this.pools[cls];
+                pool.push(object);
             };
+            ObjectPool.pools = new Object();
             return ObjectPool;
         }());
         utils.ObjectPool = ObjectPool;

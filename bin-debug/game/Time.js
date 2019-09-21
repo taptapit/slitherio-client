@@ -3,12 +3,12 @@ var __reflect = (this && this.__reflect) || function (p, c, t) {
 };
 var game;
 (function (game) {
-    var PoolManager = (function () {
-        function PoolManager() {
+    var Time = (function () {
+        function Time() {
         }
-        return PoolManager;
+        return Time;
     }());
-    game.PoolManager = PoolManager;
-    __reflect(PoolManager.prototype, "game.PoolManager");
+    game.Time = Time;
+    __reflect(Time.prototype, "game.Time");
 })(game || (game = {}));
-//# sourceMappingURL=PoolManager.js.map
+//# sourceMappingURL=Time.js.map

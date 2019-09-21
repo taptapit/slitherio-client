@@ -38,8 +38,11 @@ var game;
                 return Math.abs(this.viewPortCenterX - rectCenterX) <= this.stageWith * 0.5 + rect.width * 0.5 &&
                     Math.abs(this.viewPortCenterY - rectCenterY) <= this.stageHeight * 0.5 + rect.height * 0.5;
             }
-            else {
+            else if (rect instanceof egret.Point) {
                 return this.viewPortRect.containsPoint(rect);
+            }
+            else {
+                console.error("[isInViewPort]param1 is unsupport type:" + rect);
             }
         };
         Camera.Epsilon = 200;

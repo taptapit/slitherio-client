@@ -17,16 +17,19 @@ module game.data {
 		public constructor() {
 		}
 
-		public get(row : number, column : number, autoCreate : boolean = false)
+		public get(column : number, row : number, autoCreate : boolean = false)
 		{
-			let key = row * 10000 + column;
-			let node : WorldNode = this.nodes[key];
+			let id = column * 10000 + row;
+			let node : WorldNode = this.nodes[id];
 			if(!node && autoCreate)
 			{
 				node = new WorldNode();
+				node.x =  column * WorldNode.SIDE_LENGTH;
+				node.y =  row * WorldNode.SIDE_LENGTH;
 				node.row = row;
 				node.column = column;
-				this.nodes[key] = node;
+				node.id = id;
+				this.nodes[id] = node;
 			}
 			return node;
 		}

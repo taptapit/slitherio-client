@@ -12,14 +12,14 @@ module game.renderer {
 			this.subRenderers = [];
 		}
 
-		private createSubRenderer()
+		private createSubRenderer(data : SnakePoint)
 		{
 			let subRenderer : egret.Sprite = new egret.Sprite();
-			subRenderer.graphics.beginFill(0x000000);
+			subRenderer.graphics.beginFill(data.color);
 			subRenderer.graphics.drawCircle(0, 0, Snake.BODY_SIZE);
 			subRenderer.graphics.endFill();
 			this.subRenderers.push(subRenderer);
-			this.addChild(subRenderer);
+			this.addChildAt(subRenderer, 0);
 			return subRenderer;
 		}
 
@@ -39,7 +39,7 @@ module game.renderer {
 			{
 				snakePoint = this.data.points[i];
 				// console.log("snakePoint:" + snakePoint);
-				subRenderer = this.subRenderers.length > i ? this.subRenderers[i] : this.createSubRenderer();
+				subRenderer = this.subRenderers.length > i ? this.subRenderers[i] : this.createSubRenderer(snakePoint);
 				subRenderer.scaleX = snake.scale;
 				subRenderer.scaleY = snake.scale;
 				subRenderer.x = snakePoint.x;

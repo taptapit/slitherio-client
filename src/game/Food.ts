@@ -14,7 +14,13 @@ module game {
 			return energy * 0.01;
 		}
 
+		public radius()
+		{
+			return Snake.BODY_SIZE * this.scale * 0.5;
+		}
+
 		public constructor(id, x, y, energy, color) {
+			this.id = id;
 			this.position = new egret.Point(x, y);
 			this.energy = energy;
 			this.scale = Food.energy2Scale(energy);
@@ -23,6 +29,20 @@ module game {
 			this.eatenBy = null;
 			this.eatenAlpha = 0;
 			this.renderer = new renderer.FoodRenderer(this);
+		}
+
+		public dispose()
+		{
+			if(this.renderer.parent) GameLayerManager.getInstance().foodLayer.removeChild(this.renderer);
+			GameObjectManager.getInstance().remove(this);
+		}
+
+		public eatBy(snake:Snake)
+		{
+			this.eaten = true;
+			this.eatenBy = snake;
+			this.eatenAlpha = 0;
+			this.dispose();
 		}
 
 		public update(deltaTime)

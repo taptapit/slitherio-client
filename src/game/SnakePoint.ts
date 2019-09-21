@@ -6,6 +6,7 @@ module game {
 		public dyingAlpha : number;
 		public isDying : boolean;
 		public color :number;
+		public isIsView : boolean;
 
 		public constructor() {
 		}

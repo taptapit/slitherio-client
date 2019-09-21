@@ -1,6 +1,8 @@
 import GameLayerManager = game.utils.GameLayerManager;
 import WorldNodeManager = game.data.WorldNodeManager;
 import WorldNode = game.data.WorldNode;
+import SnakeAICenter = game.ai.SnakeAICenter;
+import SnakeAI = game.ai.SnakeAI;
 
 module game {
 	export class Game extends egret.DisplayObjectContainer {
@@ -78,6 +80,7 @@ module game {
 			}
 
 			this.player = SnakeFactory.RandomCreate();
+			// this.player.ai = new SnakeAI(this.player);
 			GameObjectManager.getInstance().player = this.player;
 			GameObjectManager.getInstance().add(this.player);
 
@@ -94,7 +97,7 @@ module game {
 
 		public createFood(x:number, y:number, energy:number, color:number)
 		{
-			console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy + ",color:" + color);
+			// console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy + ",color:" + color);
 			FoodFactory.Create(x, y, energy, color);
 		}
 
@@ -108,6 +111,7 @@ module game {
 			this.currentTick = egret.getTimer() * 0.001;
 			this.deltaTime = this.currentTick - this.lastTick;
 			this.lastTick = this.currentTick;
+			Time.deltaTime = this.deltaTime;
 			// console.log("onEnterFrame:" + this.deltaTime);
 
 			this.update();
@@ -118,15 +122,26 @@ module game {
 		{
 			Camera.update();
 
-			// this.updateWorldNode();
-			// FoodFactory.RandomCreate();
+			if(Object.keys(GameObjectManager.getInstance().foods).length < 100)
+			{
+				FoodFactory.RandomCreate();
+			}
+			if(Object.keys(GameObjectManager.getInstance().snakes).length < 10)
+			{
+				let snake = SnakeFactory.RandomCreate();
+				snake.ai = new SnakeAI(snake);
+			}
+
 			this.updateMiniMap();
 			this.updateOperation();
 
-			if(this.player && !this.player.isDead)
+			this.updateWorldNode();
+			SnakeAICenter.update();
+
+			if(this.player && !this.player.dead)
 			{
 				let food = FoodFactory.RandomCreate();
-				food.energy = 1;
+				food.energy = 0.1;
 				this.player.eat(food);
 			}
 
@@ -151,7 +166,7 @@ module game {
 
 			for(let key in nodes)
 			{
-				(nodes[key] as WorldNode).Reset();
+				(nodes[key] as WorldNode).reset();
 			}
 
 			for(let index in snakes)
@@ -182,9 +197,9 @@ module game {
 				for(let i = 0; i < node.snakes.length; i++)
 				{
 					let snake = node.snakes[i];
-					if(!snake.isDead)
+					if(!snake.dead)
 					{
-						if((Math.pow(snake.position.x - World.RADIUS, 2) + Math.pow(snake.position.y - World.RADIUS, 2)) > Math.pow(World.RADIUS - snake.radius(), 2)) snake.isDead = true;
+						if((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(World.RADIUS - snake.radius(), 2)) snake.die();
 					}
 
 					for(let i = 0; i <= 9; i++)
@@ -195,12 +210,8 @@ module game {
 							for(let index in nearbyNode.foods)
 							{
 								let food = nearbyNode.foods[index];
-								if(!snake.isDead && !food.eaten && snake.hitTest(food))
+								if(!snake.dead && !food.eaten && snake.hitTest(food))
 								{
-									food.eaten = true;
-									food.eatenBy = snake;
-									food.eatenAlpha = 0;
-
 									snake.eat(food);
 								}
 							}
@@ -210,15 +221,14 @@ module game {
 								let point = nearbyNode.snakesPoints[index];
 								if(snake.id == point.id)continue;
 
-								if(!snake.isDead && snake.hitTest(point)) 
+								if(!snake.dead && snake.hitTest(point)) 
 								{
-									snake.dead();
+									snake.die();
 								}
 							}
 						}
 					}
 				}
-				
 			}
 		}
 
@@ -228,7 +238,7 @@ module game {
 		private deltaY : number;
 		private updateOperation()
 		{
-			if(this.player && !this.player.isDead)
+			if(this.player && !this.player.dead)
 			{
 				this.lastDeltaX = this.deltaX;
 				this.lastDeltaY = this.deltaY;
@@ -237,7 +247,6 @@ module game {
 				if (this.deltaX != this.lastDeltaX || this.deltaY != this.lastDeltaY)
 				{
 					this.player.targetAngle = Math.atan2(this.deltaY, this.deltaX);
-					// console.log("updateTargetAngle targetAngle:" + this.player.targetAngle);
 				}
 
 				this.player.isAccelerate = Input.getInstance().isDoubleClick;
@@ -262,6 +271,12 @@ module game {
 			for(let key in foods)
 			{
 				foods[key].render();
+			}
+
+			let nodes = WorldNodeManager.getInstance().nodes;
+			for(let key in nodes)
+			{
+				(nodes[key] as WorldNode).drawGizimos();
 			}
 		}
 

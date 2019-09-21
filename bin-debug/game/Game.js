@@ -11,6 +11,8 @@ r.prototype = e.prototype, t.prototype = new r();
 var GameLayerManager = game.utils.GameLayerManager;
 var WorldNodeManager = game.data.WorldNodeManager;
 var WorldNode = game.data.WorldNode;
+var SnakeAICenter = game.ai.SnakeAICenter;
+var SnakeAI = game.ai.SnakeAI;
 var game;
 (function (game) {
     var Game = (function (_super) {
@@ -69,6 +71,7 @@ var game;
                 _this.addEventListener(egret.Event.ENTER_FRAME, _this.onEnterFrame, _this);
             };
             this.player = game.SnakeFactory.RandomCreate();
+            // this.player.ai = new SnakeAI(this.player);
             GameObjectManager.getInstance().player = this.player;
             GameObjectManager.getInstance().add(this.player);
             EventCenter.addListener(GameEvent.CREATE_FOOD, this.createFood, this);
@@ -80,7 +83,7 @@ var game;
             egret.lifecycle.onResume = null;
         };
         Game.prototype.createFood = function (x, y, energy, color) {
-            console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy + ",color:" + color);
+            // console.log("createFood x:" + x + ",y:" + y + ",energy:" + energy + ",color:" + color);
             game.FoodFactory.Create(x, y, energy, color);
         };
         Game.prototype.onEnterFrame = function (event) {
@@ -91,19 +94,27 @@ var game;
             this.currentTick = egret.getTimer() * 0.001;
             this.deltaTime = this.currentTick - this.lastTick;
             this.lastTick = this.currentTick;
+            game.Time.deltaTime = this.deltaTime;
             // console.log("onEnterFrame:" + this.deltaTime);
             this.update();
             this.render();
         };
         Game.prototype.update = function () {
             game.Camera.update();
-            // this.updateWorldNode();
-            // FoodFactory.RandomCreate();
+            if (Object.keys(GameObjectManager.getInstance().foods).length < 100) {
+                game.FoodFactory.RandomCreate();
+            }
+            if (Object.keys(GameObjectManager.getInstance().snakes).length < 10) {
+                var snake = game.SnakeFactory.RandomCreate();
+                snake.ai = new SnakeAI(snake);
+            }
             this.updateMiniMap();
             this.updateOperation();
-            if (this.player && !this.player.isDead) {
+            this.updateWorldNode();
+            SnakeAICenter.update();
+            if (this.player && !this.player.dead) {
                 var food = game.FoodFactory.RandomCreate();
-                food.energy = 1;
+                food.energy = 0.1;
                 this.player.eat(food);
             }
             var snakes = GameObjectManager.getInstance().snakes;
@@ -120,7 +131,7 @@ var game;
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
             for (var key in nodes) {
-                nodes[key].Reset();
+                nodes[key].reset();
             }
             for (var index in snakes) {
                 var snake = snakes[index];
@@ -141,19 +152,16 @@ var game;
                 var node = nodes[index];
                 for (var i = 0; i < node.snakes.length; i++) {
                     var snake = node.snakes[i];
-                    if (!snake.isDead) {
-                        if ((Math.pow(snake.position.x - game.World.RADIUS, 2) + Math.pow(snake.position.y - game.World.RADIUS, 2)) > Math.pow(game.World.RADIUS - snake.radius(), 2))
-                            snake.isDead = true;
+                    if (!snake.dead) {
+                        if ((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(game.World.RADIUS - snake.radius(), 2))
+                            snake.die();
                     }
                     for (var i_1 = 0; i_1 <= 9; i_1++) {
                         var nearbyNode = WorldNodeManager.getInstance().get(node.column - 1 + i_1 % 3, node.row - 1 + Math.floor(i_1 / 3));
                         if (nearbyNode) {
                             for (var index_2 in nearbyNode.foods) {
                                 var food = nearbyNode.foods[index_2];
-                                if (!snake.isDead && !food.eaten && snake.hitTest(food)) {
-                                    food.eaten = true;
-                                    food.eatenBy = snake;
-                                    food.eatenAlpha = 0;
+                                if (!snake.dead && !food.eaten && snake.hitTest(food)) {
                                     snake.eat(food);
                                 }
                             }
@@ -161,8 +169,8 @@ var game;
                                 var point = nearbyNode.snakesPoints[index_3];
                                 if (snake.id == point.id)
                                     continue;
-                                if (!snake.isDead && snake.hitTest(point)) {
-                                    snake.dead();
+                                if (!snake.dead && snake.hitTest(point)) {
+                                    snake.die();
                                 }
                             }
                         }
@@ -171,14 +179,13 @@ var game;
             }
         };
         Game.prototype.updateOperation = function () {
-            if (this.player && !this.player.isDead) {
+            if (this.player && !this.player.dead) {
                 this.lastDeltaX = this.deltaX;
                 this.lastDeltaY = this.deltaY;
                 this.deltaX = game.Input.getInstance().deltaX;
                 this.deltaY = game.Input.getInstance().deltaY;
                 if (this.deltaX != this.lastDeltaX || this.deltaY != this.lastDeltaY) {
                     this.player.targetAngle = Math.atan2(this.deltaY, this.deltaX);
-                    // console.log("updateTargetAngle targetAngle:" + this.player.targetAngle);
                 }
                 this.player.isAccelerate = game.Input.getInstance().isDoubleClick;
                 this.player.velocity = this.player.isAccelerate ? game.Snake.VELOCITY_FAST : game.Snake.VELOCITY_NORMAL;
@@ -195,6 +202,10 @@ var game;
             }
             for (var key in foods) {
                 foods[key].render();
+            }
+            var nodes = WorldNodeManager.getInstance().nodes;
+            for (var key in nodes) {
+                nodes[key].drawGizimos();
             }
         };
         return Game;

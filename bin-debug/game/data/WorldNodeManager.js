@@ -15,15 +15,18 @@ var game;
                 }
                 return this.instance;
             };
-            WorldNodeManager.prototype.get = function (row, column, autoCreate) {
+            WorldNodeManager.prototype.get = function (column, row, autoCreate) {
                 if (autoCreate === void 0) { autoCreate = false; }
-                var key = row * 10000 + column;
-                var node = this.nodes[key];
+                var id = column * 10000 + row;
+                var node = this.nodes[id];
                 if (!node && autoCreate) {
                     node = new data.WorldNode();
+                    node.x = column * data.WorldNode.SIDE_LENGTH;
+                    node.y = row * data.WorldNode.SIDE_LENGTH;
                     node.row = row;
                     node.column = column;
-                    this.nodes[key] = node;
+                    node.id = id;
+                    this.nodes[id] = node;
                 }
                 return node;
             };

@@ -1,8 +1,6 @@
 module game.data {
 	export class GameObjectManager {
 
-		public static UUID : number = 0;
-
 		private static instance : GameObjectManager;
 
 		public static getInstance()
@@ -13,6 +11,8 @@ module game.data {
 			}
 			return this.instance;
 		}
+
+		public static UUID : number = 0;
 
 		public player : Snake;
 

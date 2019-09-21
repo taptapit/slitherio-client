@@ -6,26 +6,13 @@ module game {
 
 		public static RandomCreate()
 		{
-			let snake = new Snake(GameObjectManager.UUID++, "None", egret.Point.create(0, 0), 0, Snake.VELOCITY_NORMAL, null, 0, 120);
-			
-			let points:SnakePoint[] = [];
-			let scale = Snake.length2Scale(Snake.BORN_BODY_LENGTH);
-			snake.scale = scale;
-			
-			var angle = 2 * Math.PI * Math.random();
-			for(var i = 0; i < Snake.BORN_BODY_LENGTH; i++)
-			{
-				var point = new SnakePoint();
-				point.x = Snake.BODY_POINT_DELTA_SCALE * scale * Math.cos(angle) * i;
-				point.y = Snake.BODY_POINT_DELTA_SCALE * scale * Math.sin(angle) * i;
-				point.color = 0x00ffff;
-				points.push(point)
-			}
-
-			snake.points = points;
-
+			let randomRadius = Math.random() * 0.9;
+			let randomAngle = Math.random() * Math.PI * 2;
+			let snake = new Snake(++GameObjectManager.UUID,
+						GameObjectManager.UUID, 
+			egret.Point.create(Math.random() * World.RADIUS * 0.9, Math.random() * World.RADIUS * 0.9), 
+			Math.random() * Math.PI * 2, Snake.VELOCITY_NORMAL, [], Math.floor(Math.random() * ColorUtils.COLORS.length), 120);
 			GameObjectManager.getInstance().add(snake);
-
 			return snake;
 		}
 

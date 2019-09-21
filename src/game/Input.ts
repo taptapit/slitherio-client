@@ -37,7 +37,7 @@ module game {
 			return value;
 		}
 
-		public onTouchBegin(e: egret.TouchEvent)
+		private onTouchBegin(e: egret.TouchEvent)
 		{
 			this.isDoubleClick = this.IsDoubleClick();
 			this.isTouching = true;
@@ -47,7 +47,7 @@ module game {
 		}
 
 		private touchMoveTime : number;
-		public onTouchMove(e: egret.TouchEvent)
+		private onTouchMove(e: egret.TouchEvent)
 		{
 			let nowTime = egret.getTimer();
 			this.touchMoveTime = isNaN(this.touchMoveTime) ? nowTime : this.touchMoveTime; 
@@ -64,7 +64,7 @@ module game {
 			}
 		}
 
-		public onTouchEnd(e: egret.TouchEvent)
+		private onTouchEnd(e: egret.TouchEvent)
 		{
 			this.isTouching = false;
 			this.isDoubleClick = false;
