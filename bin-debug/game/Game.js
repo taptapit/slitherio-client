@@ -101,30 +101,23 @@ var game;
         };
         Game.prototype.update = function () {
             game.Camera.update();
-            if (Object.keys(GameObjectManager.getInstance().foods).length < 100) {
-                game.FoodFactory.RandomCreate();
-            }
-            if (Object.keys(GameObjectManager.getInstance().snakes).length < 10) {
-                var snake = game.SnakeFactory.RandomCreate();
-                snake.ai = new SnakeAI(snake);
-            }
-            this.updateMiniMap();
-            this.updateOperation();
-            this.updateWorldNode();
-            SnakeAICenter.update();
             if (this.player && !this.player.dead) {
                 var food = game.FoodFactory.RandomCreate();
                 food.energy = 0.1;
                 this.player.eat(food);
             }
-            var snakes = GameObjectManager.getInstance().snakes;
-            for (var key in snakes) {
-                snakes[key].update(this.deltaTime);
+            if (Object.keys(GameObjectManager.getInstance().foods).length < 1000) {
+                game.FoodFactory.RandomCreate();
             }
-            var foods = GameObjectManager.getInstance().foods;
-            for (var key in foods) {
-                foods[key].update(this.deltaTime);
+            if (Object.keys(GameObjectManager.getInstance().snakes).length < 20) {
+                var snake = game.SnakeFactory.RandomCreate();
+                snake.ai = new SnakeAI(snake);
             }
+            this.updateMiniMap();
+            this.updateOperation();
+            GameObjectManager.getInstance().update();
+            this.updateWorldNode();
+            SnakeAICenter.update();
         };
         Game.prototype.updateWorldNode = function () {
             var nodes = WorldNodeManager.getInstance().nodes;
@@ -153,7 +146,7 @@ var game;
                 for (var i = 0; i < node.snakes.length; i++) {
                     var snake = node.snakes[i];
                     if (!snake.dead) {
-                        if ((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(game.World.RADIUS - snake.radius(), 2))
+                        if ((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(game.World.RADIUS - game.World.EDGE_SEGMENT_HEIGHT * 0.5 - snake.radius(), 2))
                             snake.die();
                     }
                     for (var i_1 = 0; i_1 <= 9; i_1++) {
@@ -177,6 +170,9 @@ var game;
                     }
                 }
             }
+            for (var key in nodes) {
+                nodes[key].update();
+            }
         };
         Game.prototype.updateOperation = function () {
             if (this.player && !this.player.dead) {
@@ -195,13 +191,16 @@ var game;
             //TODO
         };
         Game.prototype.render = function () {
+            game.GameHUDDrawer.render();
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
             for (var key in snakes) {
-                snakes[key].render();
+                var snake = snakes[key];
+                snake.render();
             }
             for (var key in foods) {
-                foods[key].render();
+                var food = foods[key];
+                food.render();
             }
             var nodes = WorldNodeManager.getInstance().nodes;
             for (var key in nodes) {

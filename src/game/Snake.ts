@@ -37,8 +37,16 @@ module game {
 		public targetAngle : number;
 		public isAccelerate : boolean;
 		public renderer : renderer.SnakeRenderer;
-		public isInView : boolean;
 		public ai : ai.SnakeAI;
+
+		public get isInView()
+		{
+			for(let i = 0;i < this.points.length;i++)
+			{
+				if(this.points[i].isIsView)return true;
+			}
+			return false;
+		}
 
 		public static skinColor(skin:number, index:number)
 		{
@@ -144,8 +152,10 @@ module game {
 			this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
 		}
 
-		public update(deltaTime)
+		public update()
 		{
+			let deltaTime = Time.deltaTime;
+			
 			this.updateNameAlpha();
 			this.updateDying(deltaTime);
 			this.updateEnergy(deltaTime);
@@ -278,11 +288,17 @@ module game {
 
 		public render()
 		{
-			if(this.renderer)
+			if(this.isInView)
 			{
-				if(!this.renderer.parent) GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
-				
-				this.renderer.render();
+				if(this.renderer)
+				{
+					if(!this.renderer.parent) GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
+					
+					this.renderer.render();
+				}
+			}else
+			{
+				if(this.renderer && this.renderer.parent) GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
 			}
 		}
 

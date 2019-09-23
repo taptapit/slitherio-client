@@ -32,10 +32,10 @@ var game;
             this.eatenAlpha = 0;
             this.dispose();
         };
-        Food.prototype.update = function (deltaTime) {
+        Food.prototype.update = function () {
         };
         Food.prototype.render = function () {
-            if (game.Camera.isInViewPort(this.position)) {
+            if (this.isInView) {
                 if (this.renderer) {
                     if (!this.renderer.parent)
                         GameLayerManager.getInstance().foodLayer.addChild(this.renderer);

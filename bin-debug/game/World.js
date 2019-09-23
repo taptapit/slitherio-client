@@ -33,11 +33,11 @@ var game;
                 this.addChild(shp);
             }
         };
-        World.EDGE_SEGMENT_WIDTH = 200;
-        World.EDGE_SEGMENT_HEIGHT = 100;
+        World.EDGE_SEGMENT_WIDTH = 2000;
+        World.EDGE_SEGMENT_HEIGHT = 1000;
         World.EDGE_SEGMENT_COLOR = 0x2D2D2D;
         World.EDGE_SEGMENT_NUM = 120;
-        World.RADIUS = 1000;
+        World.RADIUS = 10000;
         World.DEG_TO_RAD = 2 * Math.PI / 360;
         return World;
     }(egret.Sprite));

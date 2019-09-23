@@ -11,6 +11,20 @@ var game;
                 this.snakesPoints = [];
                 this.foods = [];
             }
+            WorldNode.prototype.update = function () {
+                var rect = egret.Rectangle.create();
+                rect.setTo(this.x, this.y, WorldNode.SIDE_LENGTH, WorldNode.SIDE_LENGTH);
+                this.isInView = game.Camera.isInViewPort(rect);
+                egret.Rectangle.release(rect);
+                for (var key in this.snakesPoints) {
+                    var point = this.snakesPoints[key];
+                    point.isIsView = this.isInView;
+                }
+                for (var key in this.foods) {
+                    var food = this.foods[key];
+                    food.isInView = this.isInView;
+                }
+            };
             WorldNode.prototype.reset = function () {
                 if (this.snakes)
                     this.snakes.splice(0, this.snakes.length);

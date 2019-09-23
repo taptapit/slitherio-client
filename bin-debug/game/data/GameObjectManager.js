@@ -7,6 +7,7 @@ var game;
     (function (data) {
         var GameObjectManager = (function () {
             function GameObjectManager() {
+                this.ranks = [];
                 this.snakes = {};
                 this.foods = {};
             }
@@ -15,6 +16,30 @@ var game;
                     this.instance = new GameObjectManager();
                 }
                 return this.instance;
+            };
+            GameObjectManager.prototype.sortSnake = function (a, b) {
+                if (a.energy > b.energy)
+                    return -1;
+                else if (a.energy < b.energy)
+                    return 1;
+                else
+                    return 0;
+            };
+            GameObjectManager.prototype.update = function () {
+                var snakes = GameObjectManager.getInstance().snakes;
+                var foods = GameObjectManager.getInstance().foods;
+                if (this.ranks)
+                    this.ranks.splice(0, this.ranks.length);
+                for (var key in snakes) {
+                    var snake = snakes[key];
+                    this.history = !this.history || snake.energy > this.history.energy ? snake : this.history;
+                    this.ranks.push(snake);
+                    snake.update();
+                }
+                this.ranks.sort(this.sortSnake);
+                for (var key in foods) {
+                    foods[key].update();
+                }
             };
             GameObjectManager.prototype.add = function (o) {
                 if (o instanceof game.Snake) {

@@ -1,11 +1,11 @@
 module game {
 	export class World extends egret.Sprite {
 		
-		public static EDGE_SEGMENT_WIDTH = 200;
-		public static EDGE_SEGMENT_HEIGHT = 100;
+		public static EDGE_SEGMENT_WIDTH = 2000;
+		public static EDGE_SEGMENT_HEIGHT = 1000;
 		public static EDGE_SEGMENT_COLOR = 0x2D2D2D;
 		public static EDGE_SEGMENT_NUM = 120;
-		public static RADIUS = 1000;
+		public static RADIUS = 10000;
 		public static DEG_TO_RAD = 2 * Math.PI / 360;
 
 		public constructor() {

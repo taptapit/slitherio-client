@@ -8,6 +8,7 @@ module game {
 		public eaten : boolean;
 		public eatenBy : Snake;
 		public eatenAlpha : number;
+		public isInView : boolean;
 		public renderer : renderer.FoodRenderer;
 
 		public static energy2Scale(energy){
@@ -45,19 +46,18 @@ module game {
 			this.dispose();
 		}
 
-		public update(deltaTime)
+		public update()
 		{
 
 		}
 
 		public render()
 		{
-			if(Camera.isInViewPort(this.position))
+			if(this.isInView)
 			{
 				if(this.renderer)
 				{
 					if(!this.renderer.parent) GameLayerManager.getInstance().foodLayer.addChild(this.renderer);
-					
 					this.renderer.render();
 				}
 			}else

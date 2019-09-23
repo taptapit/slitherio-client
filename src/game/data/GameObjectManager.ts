@@ -14,13 +14,47 @@ module game.data {
 
 		public static UUID : number = 0;
 
+		public history : Snake;
+
 		public player : Snake;
+
+		public ranks : Snake[] = [];
 
 		public snakes : Object = {};
 
 		public foods : Object = {};
 
 		public constructor() {
+		}
+
+		private sortSnake(a:Snake, b:Snake)
+		{
+			if(a.energy > b.energy)return -1;
+			else if(a.energy < b.energy)return 1;
+			else return 0;
+		}
+
+		public update()
+		{
+			let snakes = GameObjectManager.getInstance().snakes;
+			let foods = GameObjectManager.getInstance().foods;
+
+			if(this.ranks) this.ranks.splice(0, this.ranks.length);
+
+			for(let key in snakes)
+			{
+				let snake : Snake = snakes[key];
+				this.history = !this.history || snake.energy > this.history.energy ? snake : this.history;
+				this.ranks.push(snake);
+				snake.update();
+			}
+
+			this.ranks.sort(this.sortSnake);
+
+			for(let key in foods)
+			{
+				(foods[key] as Food).update();
+			}
 		}
 
 		public add(o : Snake | Food)

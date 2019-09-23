@@ -21,22 +21,22 @@ var game;
                 // console.log("stageWith:" + this.stageWith + ",stageHeight:" + this.stageHeight);
                 // console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
                 // console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
-                this.viewPortMinX = sceneOffsetX;
-                this.viewPortMaxX = sceneOffsetX + this.stageWith;
-                this.viewPortMinY = sceneOffsetY;
-                this.viewPortMaxY = sceneOffsetY + this.stageHeight;
+                this.viewPortMinX = sceneOffsetX - Camera.VIEW_PORT_EXTENSION;
+                this.viewPortMaxX = sceneOffsetX + this.stageWith + Camera.VIEW_PORT_EXTENSION;
+                this.viewPortMinY = sceneOffsetY - Camera.VIEW_PORT_EXTENSION;
+                this.viewPortMaxY = sceneOffsetY + this.stageHeight + Camera.VIEW_PORT_EXTENSION;
                 this.viewPortRect = this.viewPortRect ? this.viewPortRect : new egret.Rectangle();
-                this.viewPortRect.setTo(this.viewPortMinX, this.viewPortMinY, this.stageWith, this.stageHeight);
-                this.viewPortCenterX = (this.viewPortMaxX - this.viewPortMinX) * 0.5;
-                this.viewPortCenterY = (this.viewPortMaxY - this.viewPortMinY) * 0.5;
+                this.viewPortRect.setTo(this.viewPortMinX, this.viewPortMinY, this.viewPortMaxX - this.viewPortMinX, this.viewPortMaxY - this.viewPortMinY);
+                this.viewPortCenterX = (this.viewPortMaxX + this.viewPortMinX) * 0.5;
+                this.viewPortCenterY = (this.viewPortMaxY + this.viewPortMinY) * 0.5;
             }
         };
         Camera.isInViewPort = function (rect) {
             if (rect instanceof egret.Rectangle) {
-                var rectCenterX = (rect.right - rect.left) * 0.5;
-                var rectCenterY = (rect.bottom - rect.top) * 0.5;
-                return Math.abs(this.viewPortCenterX - rectCenterX) <= this.stageWith * 0.5 + rect.width * 0.5 &&
-                    Math.abs(this.viewPortCenterY - rectCenterY) <= this.stageHeight * 0.5 + rect.height * 0.5;
+                var rectCenterX = (rect.right + rect.left) * 0.5;
+                var rectCenterY = (rect.bottom + rect.top) * 0.5;
+                return Math.abs(this.viewPortCenterX - rectCenterX) <= this.viewPortRect.width * 0.5 + rect.width * 0.5 &&
+                    Math.abs(this.viewPortCenterY - rectCenterY) <= this.viewPortRect.height * 0.5 + rect.height * 0.5;
             }
             else if (rect instanceof egret.Point) {
                 return this.viewPortRect.containsPoint(rect);
@@ -45,7 +45,7 @@ var game;
                 console.error("[isInViewPort]param1 is unsupport type:" + rect);
             }
         };
-        Camera.Epsilon = 200;
+        Camera.VIEW_PORT_EXTENSION = WorldNode.SIDE_LENGTH;
         return Camera;
     }());
     game.Camera = Camera;

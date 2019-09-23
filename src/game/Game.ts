@@ -122,11 +122,17 @@ module game {
 		{
 			Camera.update();
 
-			if(Object.keys(GameObjectManager.getInstance().foods).length < 100)
+			if(this.player && !this.player.dead)
+			{
+				let food = FoodFactory.RandomCreate();
+				food.energy = 0.1;
+				this.player.eat(food);
+			}
+			if(Object.keys(GameObjectManager.getInstance().foods).length < 1000)
 			{
 				FoodFactory.RandomCreate();
 			}
-			if(Object.keys(GameObjectManager.getInstance().snakes).length < 10)
+			if(Object.keys(GameObjectManager.getInstance().snakes).length < 20)
 			{
 				let snake = SnakeFactory.RandomCreate();
 				snake.ai = new SnakeAI(snake);
@@ -135,27 +141,10 @@ module game {
 			this.updateMiniMap();
 			this.updateOperation();
 
+			GameObjectManager.getInstance().update();
+
 			this.updateWorldNode();
 			SnakeAICenter.update();
-
-			if(this.player && !this.player.dead)
-			{
-				let food = FoodFactory.RandomCreate();
-				food.energy = 0.1;
-				this.player.eat(food);
-			}
-
-			let snakes = GameObjectManager.getInstance().snakes;
-			for(let key in snakes)
-			{
-				(snakes[key] as Snake).update(this.deltaTime);
-			}
-
-			let foods = GameObjectManager.getInstance().foods;
-			for(let key in foods)
-			{
-				(foods[key] as Food).update(this.deltaTime);
-			}
 		}
 
 		public updateWorldNode()
@@ -199,7 +188,7 @@ module game {
 					let snake = node.snakes[i];
 					if(!snake.dead)
 					{
-						if((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(World.RADIUS - snake.radius(), 2)) snake.die();
+						if((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(World.RADIUS - World.EDGE_SEGMENT_HEIGHT * 0.5 - snake.radius(), 2)) snake.die();
 					}
 
 					for(let i = 0; i <= 9; i++)
@@ -229,6 +218,11 @@ module game {
 						}
 					}
 				}
+			}
+
+			for(let key in nodes)
+			{
+				(nodes[key] as WorldNode).update();
 			}
 		}
 
@@ -261,16 +255,20 @@ module game {
 
 		private render()
 		{
+			GameHUDDrawer.render();
+
 			let snakes = GameObjectManager.getInstance().snakes;
 			let foods = GameObjectManager.getInstance().foods;
 
 			for(let key in snakes)
 			{
-				snakes[key].render();
+				let snake = snakes[key] as Snake;
+				snake.render();
 			}
 			for(let key in foods)
 			{
-				foods[key].render();
+				let food = foods[key] as Food;
+				food.render();
 			}
 
 			let nodes = WorldNodeManager.getInstance().nodes;

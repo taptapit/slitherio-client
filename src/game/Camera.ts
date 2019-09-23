@@ -1,12 +1,13 @@
 module game {
 	export class Camera {
-		private 
+		
+		private static VIEW_PORT_EXTENSION : number = WorldNode.SIDE_LENGTH;
+
 		public constructor() {
 		}
 
 		private static stageWith : number;
 		private static stageHeight : number;
-		private static Epsilon : number = 200;
 		
 		private static viewPortRect : egret.Rectangle;
 		private static viewPortMinX : number;
@@ -37,16 +38,16 @@ module game {
 				// console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
 				// console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
 
-				this.viewPortMinX = sceneOffsetX;
-				this.viewPortMaxX = sceneOffsetX +this.stageWith;
-				this.viewPortMinY = sceneOffsetY;
-				this.viewPortMaxY = sceneOffsetY +this.stageHeight;
+				this.viewPortMinX = sceneOffsetX - Camera.VIEW_PORT_EXTENSION;
+				this.viewPortMaxX = sceneOffsetX + this.stageWith + Camera.VIEW_PORT_EXTENSION;
+				this.viewPortMinY = sceneOffsetY - Camera.VIEW_PORT_EXTENSION;
+				this.viewPortMaxY = sceneOffsetY + this.stageHeight + Camera.VIEW_PORT_EXTENSION;
 
 				this.viewPortRect = this.viewPortRect ? this.viewPortRect : new egret.Rectangle();
-				this.viewPortRect.setTo(this.viewPortMinX, this.viewPortMinY, this.stageWith, this.stageHeight);
+				this.viewPortRect.setTo(this.viewPortMinX, this.viewPortMinY, this.viewPortMaxX-this.viewPortMinX, this.viewPortMaxY - this.viewPortMinY);
 
-				this.viewPortCenterX = (this.viewPortMaxX - this.viewPortMinX) * 0.5;
-				this.viewPortCenterY = (this.viewPortMaxY - this.viewPortMinY) * 0.5;
+				this.viewPortCenterX = (this.viewPortMaxX + this.viewPortMinX) * 0.5;
+				this.viewPortCenterY = (this.viewPortMaxY + this.viewPortMinY) * 0.5;
 			}
 		}
 
@@ -54,10 +55,10 @@ module game {
 		{
 			if(rect instanceof egret.Rectangle)
 			{
-				let rectCenterX = (rect.right - rect.left) * 0.5;
-				let rectCenterY = (rect.bottom - rect.top) * 0.5;
-				return Math.abs(this.viewPortCenterX - rectCenterX) <= this.stageWith * 0.5 + rect.width * 0.5 &&
-						Math.abs(this.viewPortCenterY - rectCenterY) <= this.stageHeight * 0.5 + rect.height * 0.5;
+				let rectCenterX = (rect.right + rect.left) * 0.5;
+				let rectCenterY = (rect.bottom + rect.top) * 0.5;
+				return Math.abs(this.viewPortCenterX - rectCenterX) <= this.viewPortRect.width * 0.5 + rect.width * 0.5  &&
+						Math.abs(this.viewPortCenterY - rectCenterY) <= this.viewPortRect.height * 0.5 + rect.height * 0.5;
 			}else if(rect instanceof egret.Point)
 			{
 				return this.viewPortRect.containsPoint(rect);

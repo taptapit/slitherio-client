@@ -11,7 +11,7 @@ module game {
 			let snake = new Snake(++GameObjectManager.UUID,
 						GameObjectManager.UUID, 
 			egret.Point.create(Math.random() * World.RADIUS * 0.9, Math.random() * World.RADIUS * 0.9), 
-			Math.random() * Math.PI * 2, Snake.VELOCITY_NORMAL, [], Math.floor(Math.random() * ColorUtils.COLORS.length), 120);
+			Math.random() * Math.PI * 2, Snake.VELOCITY_NORMAL, [], Math.floor(Math.random() * ColorUtils.COLORS.length), 1200);
 			GameObjectManager.getInstance().add(snake);
 			return snake;
 		}

@@ -28,6 +28,17 @@ var game;
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
             this.renderer = new game.renderer.SnakeRenderer(this);
         }
+        Object.defineProperty(Snake.prototype, "isInView", {
+            get: function () {
+                for (var i = 0; i < this.points.length; i++) {
+                    if (this.points[i].isIsView)
+                        return true;
+                }
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Snake.skinColor = function (skin, index) {
             var startColor = ColorUtils.COLORS[skin];
             var endColor = ColorUtils.lerp(startColor, 0xC4C4C4, 0.7);
@@ -91,7 +102,8 @@ var game;
             this.scale = Snake.length2Scale(this.length);
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
         };
-        Snake.prototype.update = function (deltaTime) {
+        Snake.prototype.update = function () {
+            var deltaTime = game.Time.deltaTime;
             this.updateNameAlpha();
             this.updateDying(deltaTime);
             this.updateEnergy(deltaTime);
@@ -195,10 +207,16 @@ var game;
             }
         };
         Snake.prototype.render = function () {
-            if (this.renderer) {
-                if (!this.renderer.parent)
-                    GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
-                this.renderer.render();
+            if (this.isInView) {
+                if (this.renderer) {
+                    if (!this.renderer.parent)
+                        GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
+                    this.renderer.render();
+                }
+            }
+            else {
+                if (this.renderer && this.renderer.parent)
+                    GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
             }
         };
         Snake.BODY_SIZE = 100;

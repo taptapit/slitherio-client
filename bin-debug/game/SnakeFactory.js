@@ -9,7 +9,7 @@ var game;
         SnakeFactory.RandomCreate = function () {
             var randomRadius = Math.random() * 0.9;
             var randomAngle = Math.random() * Math.PI * 2;
-            var snake = new game.Snake(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(Math.random() * game.World.RADIUS * 0.9, Math.random() * game.World.RADIUS * 0.9), Math.random() * Math.PI * 2, game.Snake.VELOCITY_NORMAL, [], Math.floor(Math.random() * ColorUtils.COLORS.length), 120);
+            var snake = new game.Snake(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(Math.random() * game.World.RADIUS * 0.9, Math.random() * game.World.RADIUS * 0.9), Math.random() * Math.PI * 2, game.Snake.VELOCITY_NORMAL, [], Math.floor(Math.random() * ColorUtils.COLORS.length), 1200);
             GameObjectManager.getInstance().add(snake);
             return snake;
         };

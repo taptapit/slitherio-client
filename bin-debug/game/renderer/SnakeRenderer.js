@@ -22,34 +22,45 @@ var game;
                 return _this;
             }
             SnakeRenderer.prototype.createSubRenderer = function (data) {
-                var subRenderer = new egret.Sprite();
+                var subRenderer = ObjectPool.get(egret.Sprite);
                 subRenderer.graphics.beginFill(data.color);
                 subRenderer.graphics.drawCircle(0, 0, game.Snake.BODY_SIZE);
                 subRenderer.graphics.endFill();
                 this.subRenderers.push(subRenderer);
-                this.addChildAt(subRenderer, 0);
                 return subRenderer;
             };
             SnakeRenderer.prototype.removeSubRenderer = function (index) {
-                var subRenderer = this.subRenderers.splice(index, 1)[0];
-                this.removeChild(subRenderer);
+                var subRenderer = this.subRenderers[index];
+                this.subRenderers[index] = null;
+                // let subRenderer : egret.Sprite = this.subRenderers.splice(index, 1)[0];
+                if (subRenderer) {
+                    ObjectPool.release(egret.Sprite, subRenderer);
+                    this.removeChild(subRenderer);
+                }
             };
             SnakeRenderer.prototype.render = function () {
                 var snake = this.data;
                 var snakePoint;
                 var subRenderer;
                 //update subRenderers
-                for (var i = 0; i < this.data.points.length; i++) {
+                var pointLength = this.data.points.length;
+                for (var i = 0; i < pointLength; i++) {
                     snakePoint = this.data.points[i];
-                    // console.log("snakePoint:" + snakePoint);
-                    subRenderer = this.subRenderers.length > i ? this.subRenderers[i] : this.createSubRenderer(snakePoint);
-                    subRenderer.scaleX = snake.scale;
-                    subRenderer.scaleY = snake.scale;
-                    subRenderer.x = snakePoint.x;
-                    subRenderer.y = snakePoint.y;
-                    // subRenderer.rotation = TODO
-                    // subRenderer.alpha = TODO
-                    // subRenderer.filters = TODO
+                    if (snakePoint.isIsView) {
+                        subRenderer = (this.subRenderers.length > i && this.subRenderers[i]) ? this.subRenderers[i] : this.createSubRenderer(snakePoint);
+                        subRenderer.scaleX = snake.scale;
+                        subRenderer.scaleY = snake.scale;
+                        subRenderer.x = snakePoint.x;
+                        subRenderer.y = snakePoint.y;
+                        if (!subRenderer.parent)
+                            this.addChildAt(subRenderer, pointLength - i - 1);
+                        // subRenderer.rotation = TODO
+                        // subRenderer.alpha = TODO
+                        // subRenderer.filters = TODO
+                    }
+                    else {
+                        this.removeSubRenderer(i);
+                    }
                 }
                 //remove extra subRenderers
                 for (var i = this.data.points.length; i < this.subRenderers.length; i++) {

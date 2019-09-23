@@ -27,6 +27,25 @@ module game.data {
 		public constructor() {
 		}
 
+		public update()
+		{
+			let rect = egret.Rectangle.create();
+			rect.setTo(this.x, this.y, WorldNode.SIDE_LENGTH, WorldNode.SIDE_LENGTH);
+			this.isInView = Camera.isInViewPort(rect);
+			egret.Rectangle.release(rect);
+			
+			for(let key in this.snakesPoints)
+			{
+				let point = this.snakesPoints[key];
+				point.isIsView = this.isInView;
+			}
+			for(let key in this.foods)
+			{
+				let food = this.foods[key];
+				food.isInView = this.isInView;
+			}
+		}
+
 		public reset()
 		{
 			if(this.snakes) this.snakes.splice(0, this.snakes.length);
