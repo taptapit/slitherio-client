@@ -20,6 +20,14 @@ var game;
                 _this.touchEnabled = false;
                 return _this;
             }
+            FoodRenderer.prototype.dispose = function () {
+                if (this.parent)
+                    this.parent.removeChild(this);
+                if (this.blendRenderer) {
+                    if (this.blendRenderer.parent)
+                        this.blendRenderer.parent.removeChild(this.blendRenderer);
+                }
+            };
             FoodRenderer.prototype.render = function () {
                 var food = this.data;
                 if (!this.renderer) {
@@ -33,6 +41,17 @@ var game;
                 this.renderer.scaleY = food.scale;
                 this.renderer.x = food.position.x;
                 this.renderer.y = food.position.y;
+                if (!this.blendRenderer) {
+                    var texture = RES.getRes("blink_png");
+                    this.blendRenderer = new egret.Bitmap(texture);
+                    this.blendRenderer.blendMode = egret.BlendMode.ADD;
+                    GameLayerManager.getInstance().foodBlendLayer.addChild(this.blendRenderer);
+                }
+                this.blendRenderer.alpha = Math.cos(game.Time.frameCount * 0.1) * 0.5;
+                this.blendRenderer.scaleX = food.scale;
+                this.blendRenderer.scaleY = food.scale;
+                this.blendRenderer.x = food.position.x - this.blendRenderer.width * 0.5 * this.blendRenderer.scaleX;
+                this.blendRenderer.y = food.position.y - this.blendRenderer.height * 0.5 * this.blendRenderer.scaleY;
             };
             return FoodRenderer;
         }(egret.DisplayObjectContainer));

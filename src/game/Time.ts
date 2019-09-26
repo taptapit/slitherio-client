@@ -4,5 +4,7 @@ module game {
 		}
 
 		public static deltaTime : number;
+
+		public static frameCount : number;
 	}
 }

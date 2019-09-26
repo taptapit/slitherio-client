@@ -9,9 +9,9 @@ var ColorUtils = game.utils.ColorUtils;
 var game;
 (function (game) {
     var Snake = (function () {
-        function Snake(id, name, position, angle, velocity, points, skin, energy) {
+        function Snake(id, name, position, angle, velocity, points, color, energy) {
             if (points === void 0) { points = null; }
-            if (skin === void 0) { skin = 0; }
+            if (color === void 0) { color = 0; }
             if (energy === void 0) { energy = 0; }
             this.id = id;
             this.name = name;
@@ -21,20 +21,40 @@ var game;
             this.velocity = velocity;
             this.velocityTurnAngle = Snake.velocity2TurnAngle(this.velocity);
             this.points = points;
-            this.skin = skin;
+            this.color = color;
             this.energy = energy;
             this.length = Snake.energy2Length(energy);
             this.scale = Snake.length2Scale(this.length);
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
             this.renderer = new game.renderer.SnakeRenderer(this);
         }
+        Object.defineProperty(Snake.prototype, "hasViewStateChanged", {
+            get: function () {
+                if (this.$hasViewStateChanged == undefined) {
+                    for (var i = 0; i < this.points.length; i++) {
+                        if (this.points[i].hasViewStateChanged)
+                            this.$hasViewStateChanged = true;
+                    }
+                    if (this.$hasViewStateChanged == undefined)
+                        this.$hasViewStateChanged = false;
+                }
+                return this.$hasViewStateChanged;
+            },
+            set: function (value) { this.$hasViewStateChanged = value; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Snake.prototype, "isInView", {
             get: function () {
-                for (var i = 0; i < this.points.length; i++) {
-                    if (this.points[i].isIsView)
-                        return true;
+                if (this.$isInView == undefined) {
+                    for (var i = 0; i < this.points.length; i++) {
+                        if (this.points[i].isInView)
+                            this.$isInView = true;
+                    }
+                    if (this.$isInView == undefined)
+                        this.$isInView = false;
                 }
-                return false;
+                return this.$isInView;
             },
             enumerable: true,
             configurable: true
@@ -62,7 +82,7 @@ var game;
             return Math.floor(energy / Snake.ENERGY_PER_POINT);
         };
         Snake.prototype.radius = function () {
-            return Snake.BODY_SIZE * this.scale * 0.5;
+            return Snake.BODY_SIZE * this.scale;
         };
         Snake.prototype.dispose = function () {
             this.ai = null;
@@ -103,6 +123,7 @@ var game;
             this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
         };
         Snake.prototype.update = function () {
+            this.$isInView = undefined;
             var deltaTime = game.Time.deltaTime;
             this.updateNameAlpha();
             this.updateDying(deltaTime);
@@ -193,7 +214,8 @@ var game;
                     point.id = this.id;
                     point.x = tailPoint ? tailPoint.x : 0;
                     point.y = tailPoint ? tailPoint.y : 0;
-                    point.color = Snake.skinColor(this.skin, this.points.length);
+                    point.index = this.points.length;
+                    point.color = Snake.skinColor(this.color, this.points.length);
                     this.points.push(point);
                 }
                 for (var i = this.points.length - 1; i > 0; i--) {

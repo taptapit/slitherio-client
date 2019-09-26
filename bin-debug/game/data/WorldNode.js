@@ -18,7 +18,10 @@ var game;
                 egret.Rectangle.release(rect);
                 for (var key in this.snakesPoints) {
                     var point = this.snakesPoints[key];
-                    point.isIsView = this.isInView;
+                    if (point.isInView != this.isInView) {
+                        point.hasViewStateChanged = true;
+                    }
+                    point.isInView = this.isInView;
                 }
                 for (var key in this.foods) {
                     var food = this.foods[key];

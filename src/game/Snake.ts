@@ -24,7 +24,7 @@ module game {
 		public position : egret.Point;
 		public points : game.SnakePoint[];
 		public name : string;
-		public skin : number;
+		public color : number;
 		public velocity : number;
 		public scale : number;
 		public angle : number;
@@ -39,18 +39,38 @@ module game {
 		public renderer : renderer.SnakeRenderer;
 		public ai : ai.SnakeAI;
 
-		public get isInView()
+		private $hasViewStateChanged : boolean;
+		public set hasViewStateChanged(value){this.$hasViewStateChanged = value;}
+		public get hasViewStateChanged()
 		{
-			for(let i = 0;i < this.points.length;i++)
+			if(this.$hasViewStateChanged == undefined)
 			{
-				if(this.points[i].isIsView)return true;
+				for(let i = 0;i < this.points.length;i++)
+				{
+					if(this.points[i].hasViewStateChanged) this.$hasViewStateChanged = true;
+				}
+				if(this.$hasViewStateChanged == undefined) this.$hasViewStateChanged = false;
 			}
-			return false;
+			return this.$hasViewStateChanged;
 		}
 
-		public static skinColor(skin:number, index:number)
+		private $isInView : boolean;
+		public get isInView()
 		{
-			let startColor = ColorUtils.COLORS[skin];
+			if(this.$isInView == undefined)
+			{
+				for(let i = 0;i < this.points.length;i++)
+				{
+					if(this.points[i].isInView) this.$isInView = true;
+				}
+				if(this.$isInView == undefined) this.$isInView = false;
+			}
+			return this.$isInView;
+		}
+
+		public static skinColor(color:number, index:number)
+		{
+			let startColor = color;
 			let endColor = ColorUtils.lerp(startColor, 0xC4C4C4, 0.7);
 			let delta = 0x080808;
 			let progress = index * delta / Math.abs(endColor-startColor);
@@ -83,10 +103,10 @@ module game {
 
 		public radius()
 		{
-			return Snake.BODY_SIZE * this.scale * 0.5;
+			return Snake.BODY_SIZE * this.scale;
 		}
 
-		public constructor(id, name, position, angle, velocity, points = null, skin = 0, energy = 0) {
+		public constructor(id, name, position, angle, velocity, points = null, color = 0, energy = 0) {
 			this.id = id;
 			this.name = name;
 			this.position = position;
@@ -95,7 +115,7 @@ module game {
 			this.velocity = velocity;
 			this.velocityTurnAngle = Snake.velocity2TurnAngle(this.velocity);
 			this.points = points;
-			this.skin = skin;
+			this.color = color;
 			this.energy = energy;
 			this.length = Snake.energy2Length(energy);
 			this.scale = Snake.length2Scale(this.length);
@@ -154,6 +174,8 @@ module game {
 
 		public update()
 		{
+			this.$isInView = undefined;
+
 			let deltaTime = Time.deltaTime;
 			
 			this.updateNameAlpha();
@@ -264,12 +286,13 @@ module game {
 			{
 				if(this.points.length < this.length)
 				{
-					let point = ObjectPool.get(SnakePoint);
+					let point : SnakePoint = ObjectPool.get(SnakePoint);
 					let tailPoint = this.points[this.points.length-1];
 					point.id = this.id;
 					point.x = tailPoint ? tailPoint.x : 0;
 					point.y = tailPoint ? tailPoint.y : 0;
-					point.color = Snake.skinColor(this.skin, this.points.length);
+					point.index = this.points.length;
+					point.color = Snake.skinColor(this.color, this.points.length);
 					this.points.push(point);
 				}
 

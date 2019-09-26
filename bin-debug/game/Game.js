@@ -13,6 +13,7 @@ var WorldNodeManager = game.data.WorldNodeManager;
 var WorldNode = game.data.WorldNode;
 var SnakeAICenter = game.ai.SnakeAICenter;
 var SnakeAI = game.ai.SnakeAI;
+var GameHUDRenderer = game.renderer.GameHUDRenderer;
 var game;
 (function (game) {
     var Game = (function (_super) {
@@ -46,10 +47,18 @@ var game;
             foodLayer.touchEnabled = false;
             scene.addChild(foodLayer);
             GameLayerManager.getInstance().foodLayer = foodLayer;
+            var foodBlendLayer = new egret.DisplayObjectContainer();
+            foodBlendLayer.touchEnabled = false;
+            scene.addChild(foodBlendLayer);
+            GameLayerManager.getInstance().foodBlendLayer = foodBlendLayer;
             var snakeLayer = new egret.DisplayObjectContainer();
             snakeLayer.touchEnabled = false;
             scene.addChild(snakeLayer);
             GameLayerManager.getInstance().snakeLayer = snakeLayer;
+            var snakeBlendLayer = new egret.DisplayObjectContainer();
+            snakeBlendLayer.touchEnabled = false;
+            scene.addChild(snakeBlendLayer);
+            GameLayerManager.getInstance().snakeBlendLayer = snakeBlendLayer;
             var aboveUILayer = new egret.DisplayObjectContainer();
             aboveUILayer.touchEnabled = false;
             this.addChild(aboveUILayer);
@@ -59,6 +68,7 @@ var game;
         Game.prototype.start = function () {
             var _this = this;
             console.log("start");
+            game.Time.frameCount = 0;
             this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
             egret.lifecycle.onPause = function () {
                 console.log("onPause");
@@ -95,6 +105,7 @@ var game;
             this.deltaTime = this.currentTick - this.lastTick;
             this.lastTick = this.currentTick;
             game.Time.deltaTime = this.deltaTime;
+            game.Time.frameCount += 1;
             // console.log("onEnterFrame:" + this.deltaTime);
             this.update();
             this.render();
@@ -109,10 +120,11 @@ var game;
             if (Object.keys(GameObjectManager.getInstance().foods).length < 1000) {
                 game.FoodFactory.RandomCreate();
             }
-            if (Object.keys(GameObjectManager.getInstance().snakes).length < 20) {
-                var snake = game.SnakeFactory.RandomCreate();
-                snake.ai = new SnakeAI(snake);
-            }
+            // if(Object.keys(GameObjectManager.getInstance().snakes).length < 20)
+            // {
+            // 	let snake = SnakeFactory.RandomCreate();
+            // 	snake.ai = new SnakeAI(snake);
+            // }
             this.updateMiniMap();
             this.updateOperation();
             GameObjectManager.getInstance().update();
@@ -163,7 +175,12 @@ var game;
                                 if (snake.id == point.id)
                                     continue;
                                 if (!snake.dead && snake.hitTest(point)) {
-                                    snake.die();
+                                    if (point.index == 0) {
+                                        var otherSnake = GameObjectManager.getInstance().get(point.id);
+                                        snake.radius() >= otherSnake.radius() ? otherSnake.die() : snake.die();
+                                    }
+                                    else
+                                        snake.die();
                                 }
                             }
                         }
@@ -191,7 +208,7 @@ var game;
             //TODO
         };
         Game.prototype.render = function () {
-            game.GameHUDDrawer.render();
+            GameHUDRenderer.render();
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
             for (var key in snakes) {
@@ -202,6 +219,7 @@ var game;
                 var food = foods[key];
                 food.render();
             }
+            GameLayerManager.getInstance().world.render();
             var nodes = WorldNodeManager.getInstance().nodes;
             for (var key in nodes) {
                 nodes[key].drawGizimos();

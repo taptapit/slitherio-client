@@ -19,7 +19,9 @@ module game.utils {
 		public world : game.World;
 		public underUILayer : egret.DisplayObjectContainer;
 		public foodLayer : egret.DisplayObjectContainer;
+		public foodBlendLayer : egret.DisplayObjectContainer;
 		public snakeLayer : egret.DisplayObjectContainer;
+		public snakeBlendLayer : egret.DisplayObjectContainer;
 		public aboveUILayer : egret.DisplayObjectContainer;
 	}
 }

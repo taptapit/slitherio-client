@@ -1,2 +1,0 @@
-# slitherio-client
-slitherio-client

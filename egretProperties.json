@@ -10,13 +10,16 @@
       "name": "egret"
     },
     {
+      "name": "assetsmanager"
+    },
+    {
       "name": "game"
     },
     {
       "name": "tween"
     },
     {
-      "name": "assetsmanager"
+      "name": "socket"
     },
     {
       "name": "promise"

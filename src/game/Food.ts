@@ -34,7 +34,7 @@ module game {
 
 		public dispose()
 		{
-			if(this.renderer.parent) GameLayerManager.getInstance().foodLayer.removeChild(this.renderer);
+			if(this.renderer) this.renderer.dispose();
 			GameObjectManager.getInstance().remove(this);
 		}
 

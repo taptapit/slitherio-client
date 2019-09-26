@@ -3,6 +3,7 @@ import WorldNodeManager = game.data.WorldNodeManager;
 import WorldNode = game.data.WorldNode;
 import SnakeAICenter = game.ai.SnakeAICenter;
 import SnakeAI = game.ai.SnakeAI;
+import GameHUDRenderer = game.renderer.GameHUDRenderer;
 
 module game {
 	export class Game extends egret.DisplayObjectContainer {
@@ -51,10 +52,20 @@ module game {
 			scene.addChild(foodLayer);
 			GameLayerManager.getInstance().foodLayer = foodLayer;
 
+			let foodBlendLayer = new egret.DisplayObjectContainer();
+			foodBlendLayer.touchEnabled = false;
+			scene.addChild(foodBlendLayer);
+			GameLayerManager.getInstance().foodBlendLayer = foodBlendLayer;
+
 			let snakeLayer = new egret.DisplayObjectContainer();
 			snakeLayer.touchEnabled = false;
 			scene.addChild(snakeLayer);
 			GameLayerManager.getInstance().snakeLayer = snakeLayer;
+
+			let snakeBlendLayer = new egret.DisplayObjectContainer();
+			snakeBlendLayer.touchEnabled = false;
+			scene.addChild(snakeBlendLayer);
+			GameLayerManager.getInstance().snakeBlendLayer = snakeBlendLayer;
 
 			let aboveUILayer = new egret.DisplayObjectContainer();
 			aboveUILayer.touchEnabled = false;
@@ -67,6 +78,8 @@ module game {
 		public start()
 		{
 			console.log("start");
+			Time.frameCount = 0;
+
 			this.addEventListener(egret.Event.ENTER_FRAME, this.onEnterFrame, this);
 			egret.lifecycle.onPause = ()=> {
 				console.log("onPause");
@@ -112,6 +125,7 @@ module game {
 			this.deltaTime = this.currentTick - this.lastTick;
 			this.lastTick = this.currentTick;
 			Time.deltaTime = this.deltaTime;
+			Time.frameCount += 1;
 			// console.log("onEnterFrame:" + this.deltaTime);
 
 			this.update();
@@ -132,11 +146,11 @@ module game {
 			{
 				FoodFactory.RandomCreate();
 			}
-			if(Object.keys(GameObjectManager.getInstance().snakes).length < 20)
-			{
-				let snake = SnakeFactory.RandomCreate();
-				snake.ai = new SnakeAI(snake);
-			}
+			// if(Object.keys(GameObjectManager.getInstance().snakes).length < 20)
+			// {
+			// 	let snake = SnakeFactory.RandomCreate();
+			// 	snake.ai = new SnakeAI(snake);
+			// }
 
 			this.updateMiniMap();
 			this.updateOperation();
@@ -212,7 +226,12 @@ module game {
 
 								if(!snake.dead && snake.hitTest(point)) 
 								{
-									snake.die();
+									if(point.index == 0)//头碰头
+									{
+										let otherSnake : Snake = GameObjectManager.getInstance().get(point.id);
+										snake.radius() >= otherSnake.radius() ? otherSnake.die() : snake.die();
+									}else//头碰身
+										snake.die();
 								}
 							}
 						}
@@ -255,7 +274,7 @@ module game {
 
 		private render()
 		{
-			GameHUDDrawer.render();
+			GameHUDRenderer.render();
 
 			let snakes = GameObjectManager.getInstance().snakes;
 			let foods = GameObjectManager.getInstance().foods;
@@ -270,6 +289,8 @@ module game {
 				let food = foods[key] as Food;
 				food.render();
 			}
+
+			GameLayerManager.getInstance().world.render();
 
 			let nodes = WorldNodeManager.getInstance().nodes;
 			for(let key in nodes)

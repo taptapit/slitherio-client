@@ -1,1 +1,1 @@
-{"version":3,"file":"Time.js","sourceRoot":"","sources":["../../src/game/Time.ts"],"names":[],"mappings":";;;AAAA,IAAO,IAAI,CAOV;AAPD,WAAO,IAAI;IACV;QACC;QACA,CAAC;QAGF,WAAC;IAAD,CAAC,AALD,IAKC;IALY,SAAI,OAKhB,CAAA;IALY,UAAA,IAAI,wBAKhB,CAAA;AACF,CAAC,EAPM,IAAI,KAAJ,IAAI,QAOV"}
+{"version":3,"file":"Time.js","sourceRoot":"","sources":["../../src/game/Time.ts"],"names":[],"mappings":";;;AAAA,IAAO,IAAI,CASV;AATD,WAAO,IAAI;IACV;QACC;QACA,CAAC;QAKF,WAAC;IAAD,CAAC,AAPD,IAOC;IAPY,SAAI,OAOhB,CAAA;IAPY,UAAA,IAAI,wBAOhB,CAAA;AACF,CAAC,EATM,IAAI,KAAJ,IAAI,QASV"}

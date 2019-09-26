@@ -9,7 +9,7 @@ module game {
 		private static stageWith : number;
 		private static stageHeight : number;
 		
-		private static viewPortRect : egret.Rectangle;
+		public static viewPortRect : egret.Rectangle;
 		private static viewPortMinX : number;
 		private static viewPortMinY : number;
 		private static viewPortMaxX : number;
@@ -33,10 +33,6 @@ module game {
 				let sceneOffsetY = player.position.y - this.stageHeight * 0.5;
 				scene.x = -sceneOffsetX;
 				scene.y = -sceneOffsetY;
-
-				// console.log("stageWith:" + this.stageWith + ",stageHeight:" + this.stageHeight);
-				// console.log("player.x:" + player.position.x + ",player.y:" + player.position.y);
-				// console.log("scene.x:" + scene.x + ",scene.y:" + scene.y);
 
 				this.viewPortMinX = sceneOffsetX - Camera.VIEW_PORT_EXTENSION;
 				this.viewPortMaxX = sceneOffsetX + this.stageWith + Camera.VIEW_PORT_EXTENSION;

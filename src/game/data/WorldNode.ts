@@ -23,7 +23,6 @@ module game.data {
 
 		private gizimos : egret.Sprite;
 		
-
 		public constructor() {
 		}
 
@@ -37,7 +36,12 @@ module game.data {
 			for(let key in this.snakesPoints)
 			{
 				let point = this.snakesPoints[key];
-				point.isIsView = this.isInView;
+				
+				if(point.isInView != this.isInView)
+				{
+					point.hasViewStateChanged = true;
+				}
+				point.isInView = this.isInView;
 			}
 			for(let key in this.foods)
 			{

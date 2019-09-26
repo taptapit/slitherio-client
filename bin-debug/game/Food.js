@@ -22,8 +22,8 @@ var game;
             return game.Snake.BODY_SIZE * this.scale * 0.5;
         };
         Food.prototype.dispose = function () {
-            if (this.renderer.parent)
-                GameLayerManager.getInstance().foodLayer.removeChild(this.renderer);
+            if (this.renderer)
+                this.renderer.dispose();
             GameObjectManager.getInstance().remove(this);
         };
         Food.prototype.eatBy = function (snake) {

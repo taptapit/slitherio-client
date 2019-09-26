@@ -7,12 +7,11 @@
 			"request": "launch",
 			"file": "index.html",
 			"runtimeExecutable": "${execPath}",
-			// "runtimeExecutable": "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
 			"useBuildInServer": true,
 			"sourceMaps": true,
 			"webRoot": "${workspaceRoot}",
 			"preLaunchTask":"build",
-			"port":5914
+			"port":5463
 		},
 		{
 			"name": "Launch Chrome",
@@ -24,7 +23,7 @@
 			"webRoot": "${workspaceRoot}",
 			"preLaunchTask":"build",
 			"userDataDir":"${tmpdir}",
-			"port":5914
+			"port":5463
 		}
 	]
 }

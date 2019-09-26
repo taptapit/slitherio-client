@@ -3,10 +3,12 @@ module game {
 		public x : number;
 		public y : number;
 		public id : number;
+		public index : number;
 		public dyingAlpha : number;
 		public isDying : boolean;
 		public color :number;
-		public isIsView : boolean;
+		public isInView : boolean;
+		public hasViewStateChanged : boolean;
 
 		public constructor() {
 		}
