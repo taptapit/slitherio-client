@@ -1,18 +1,35 @@
 var __reflect = (this && this.__reflect) || function (p, c, t) {
     p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
 };
+var __extends = this && this.__extends || function __extends(t, e) { 
+ function r() { 
+ this.constructor = t;
+}
+for (var i in e) e.hasOwnProperty(i) && (t[i] = e[i]);
+r.prototype = e.prototype, t.prototype = new r();
+};
 var game;
 (function (game) {
     var renderer;
     (function (renderer) {
-        var GameHUDRenderer = (function () {
+        var GameHUDRenderer = (function (_super) {
+            __extends(GameHUDRenderer, _super);
             function GameHUDRenderer() {
+                var _this = _super.call(this) || this;
+                _this.textFields = new Object();
+                _this.tick = 0;
+                _this.map = new renderer.MapRenderer();
+                _this.map.x = egret.MainContext.instance.stage.stageWidth - 200;
+                _this.map.y = egret.MainContext.instance.stage.stageHeight - 200;
+                _this.addChild(_this.map);
+                return _this;
             }
-            GameHUDRenderer.render = function () {
+            GameHUDRenderer.prototype.render = function () {
                 this.tick -= game.Time.deltaTime;
                 if (this.tick > 0)
                     return;
                 this.tick = GameHUDRenderer.UPDATE_FREQUENCY;
+                this.map.render();
                 var ranks = GameObjectManager.getInstance().ranks;
                 var history = GameObjectManager.getInstance().history;
                 var stageWidth = egret.MainContext.instance.stage.stageWidth;
@@ -48,21 +65,21 @@ var game;
                 else
                     this.clear("History");
             };
-            GameHUDRenderer.clear = function (id) {
-                var textField = GameHUDRenderer.textFields[id];
+            GameHUDRenderer.prototype.clear = function (id) {
+                var textField = this.textFields[id];
                 if (textField) {
                     if (textField.parent)
                         textField.parent.removeChild(textField);
-                    GameHUDRenderer.textFields[id] = null;
-                    delete GameHUDRenderer.textFields[id];
+                    this.textFields[id] = null;
+                    delete this.textFields[id];
                 }
             };
-            GameHUDRenderer.drawText = function (id, content, x, y, size, color, alpha) {
-                var textField = GameHUDRenderer.textFields[id];
+            GameHUDRenderer.prototype.drawText = function (id, content, x, y, size, color, alpha) {
+                var textField = this.textFields[id];
                 if (!textField) {
                     textField = new egret.TextField();
                     textField.textAlign = egret.HorizontalAlign.LEFT;
-                    GameHUDRenderer.textFields[id] = textField;
+                    this.textFields[id] = textField;
                 }
                 textField.text = content;
                 textField.x = x;
@@ -71,13 +88,11 @@ var game;
                 textField.textColor = color;
                 textField.alpha = alpha;
                 if (!textField.parent)
-                    GameLayerManager.getInstance().aboveUILayer.addChild(textField);
+                    this.addChild(textField);
             };
-            GameHUDRenderer.textFields = new Object();
             GameHUDRenderer.UPDATE_FREQUENCY = 1;
-            GameHUDRenderer.tick = 0;
             return GameHUDRenderer;
-        }());
+        }(egret.DisplayObjectContainer));
         renderer.GameHUDRenderer = GameHUDRenderer;
         __reflect(GameHUDRenderer.prototype, "game.renderer.GameHUDRenderer");
     })(renderer = game.renderer || (game.renderer = {}));

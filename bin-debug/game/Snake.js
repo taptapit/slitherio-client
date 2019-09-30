@@ -9,24 +9,7 @@ var ColorUtils = game.utils.ColorUtils;
 var game;
 (function (game) {
     var Snake = (function () {
-        function Snake(id, name, position, angle, velocity, points, color, energy) {
-            if (points === void 0) { points = null; }
-            if (color === void 0) { color = 0; }
-            if (energy === void 0) { energy = 0; }
-            this.id = id;
-            this.name = name;
-            this.position = position;
-            this.angle = angle;
-            this.targetAngle = angle;
-            this.velocity = velocity;
-            this.velocityTurnAngle = Snake.velocity2TurnAngle(this.velocity);
-            this.points = points;
-            this.color = color;
-            this.energy = energy;
-            this.length = Snake.energy2Length(energy);
-            this.scale = Snake.length2Scale(this.length);
-            this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
-            this.renderer = new game.renderer.SnakeRenderer(this);
+        function Snake() {
         }
         Object.defineProperty(Snake.prototype, "hasViewStateChanged", {
             get: function () {
@@ -59,8 +42,8 @@ var game;
             enumerable: true,
             configurable: true
         });
-        Snake.skinColor = function (skin, index) {
-            var startColor = ColorUtils.COLORS[skin];
+        Snake.skinColor = function (color, index) {
+            var startColor = color;
             var endColor = ColorUtils.lerp(startColor, 0xC4C4C4, 0.7);
             var delta = 0x080808;
             var progress = index * delta / Math.abs(endColor - startColor);
@@ -84,10 +67,29 @@ var game;
         Snake.prototype.radius = function () {
             return Snake.BODY_SIZE * this.scale;
         };
+        Snake.prototype.set = function (id, name, position, angle, velocity, points, color, energy) {
+            this.id = id;
+            this.name = name;
+            this.position = position;
+            this.angle = angle;
+            this.targetAngle = angle;
+            this.velocity = velocity;
+            this.velocityTurnAngle = Snake.velocity2TurnAngle(this.velocity);
+            this.points = points;
+            this.color = color;
+            this.energy = energy;
+            this.length = Snake.energy2Length(energy);
+            this.scale = Snake.length2Scale(this.length);
+            this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
+            this.dead = false;
+        };
         Snake.prototype.dispose = function () {
+            ObjectPool.release(SnakeAI, this.ai);
             this.ai = null;
-            if (this.renderer.parent)
-                GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
+            if (this.renderer) {
+                this.renderer.dispose();
+                this.renderer = null;
+            }
             GameObjectManager.getInstance().remove(this);
         };
         Snake.prototype.hitTest = function (target) {
@@ -125,14 +127,10 @@ var game;
         Snake.prototype.update = function () {
             this.$isInView = undefined;
             var deltaTime = game.Time.deltaTime;
-            this.updateNameAlpha();
             this.updateDying(deltaTime);
             this.updateEnergy(deltaTime);
             this.turn(deltaTime);
             this.move(deltaTime);
-        };
-        Snake.prototype.updateNameAlpha = function () {
-            //TODO
         };
         Snake.prototype.updateDying = function (deltaTime) {
             if (this.dead) {
@@ -167,15 +165,9 @@ var game;
         };
         Snake.prototype.turn = function (deltaTime) {
             this.angle = this.clamp(((this.angle + Math.PI) % (Math.PI * 2)), -Math.PI, Math.PI) - Math.PI;
-            // console.log("turn angle:" + this.angle);
             this.targetAngle = this.clamp(((this.targetAngle + Math.PI) % (Math.PI * 2)), -Math.PI, Math.PI) - Math.PI;
-            // console.log("turn targetAngle:" + this.targetAngle);
             var deltaAngle = deltaTime * this.scaleTurnAngle * this.velocityTurnAngle;
             deltaAngle = Math.min(deltaAngle, Math.abs(this.targetAngle - this.angle));
-            // console.log("turn deltaTime:" + deltaTime);
-            // console.log("turn velocityTurnAngle:" + this.velocityTurnAngle);
-            // console.log("turn scaleTurnAngle:" + this.scaleTurnAngle);
-            // console.log("turn deltaAngle:" + deltaAngle);
             if (Math.abs(this.angle - this.targetAngle) > Math.PI) {
                 if (this.targetAngle > this.angle)
                     this.angle -= deltaAngle;
@@ -193,17 +185,8 @@ var game;
             var distance = this.velocity * deltaTime;
             var deltaPoint = this.scale * Snake.BODY_POINT_DELTA_SCALE;
             var moveRatio = Math.min(1, distance / deltaPoint);
-            // console.log("scale:" + this.scale);
-            // console.log("move time:" + deltaTime);
-            // console.log("move distance:" + distance);
-            // console.log("move movePoints:" + movePoints);
-            // console.log("this.angle:" + this.angle);
-            // console.log("111this.position:x:" + this.position.x + ",y:" + this.position.y);
-            this.position.x = this.position.x + Math.cos(this.angle) * distance;
-            this.position.y = this.position.y + Math.sin(this.angle) * distance;
-            // console.log("222this.position:x:" + this.position.x + ",y:" + this.position.y);
-            // console.log("this.points.length" + this.points.length);
-            // console.log("this.length" + this.length);
+            this.position.x = this.position.x + MathUtils.cos(this.angle) * distance;
+            this.position.y = this.position.y + MathUtils.sin(this.angle) * distance;
             if (this.points.length > this.length) {
                 ObjectPool.release(game.SnakePoint, this.points.pop());
             }
@@ -230,15 +213,17 @@ var game;
         };
         Snake.prototype.render = function () {
             if (this.isInView) {
-                if (this.renderer) {
-                    if (!this.renderer.parent)
-                        GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
-                    this.renderer.render();
+                if (!this.renderer) {
+                    this.renderer = ObjectPool.get(SnakeRenderer);
+                    this.renderer.set(this);
                 }
+                this.renderer.render();
             }
             else {
-                if (this.renderer && this.renderer.parent)
-                    GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
+                if (this.renderer) {
+                    this.renderer.dispose();
+                    this.renderer = null;
+                }
             }
         };
         Snake.BODY_SIZE = 100;

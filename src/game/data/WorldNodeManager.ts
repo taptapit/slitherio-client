@@ -23,7 +23,7 @@ module game.data {
 			let node : WorldNode = this.nodes[id];
 			if(!node && autoCreate)
 			{
-				node = new WorldNode();
+				node = ObjectPool.get(WorldNode);
 				node.x =  column * WorldNode.SIDE_LENGTH;
 				node.y =  row * WorldNode.SIDE_LENGTH;
 				node.row = row;

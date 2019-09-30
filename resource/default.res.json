@@ -1,7 +1,7 @@
 {
 	"groups": [
 		{
-			"keys": "bg_jpg,egret_icon_png,description_json,background_jpg,menu_jpg,blink_png",
+			"keys": "bg_jpg,egret_icon_png,description_json,background_jpg,menu_jpg,blink_png,map_png",
 			"name": "preload"
 		}
 	],
@@ -35,6 +35,11 @@
 			"name": "blink_png",
 			"type": "image",
 			"url": "assets/blink.png"
+		},
+		{
+			"name": "map_png",
+			"type": "image",
+			"url": "assets/map.png"
 		}
 	]
 }

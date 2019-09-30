@@ -77,11 +77,13 @@ module game.data {
 				let snake = o as Snake;
 				this.snakes[snake.id] = null;
 				delete this.snakes[snake.id];
+				ObjectPool.release(Snake, snake);
 			}else if(o instanceof Food)
 			{
 				let food = o as Food;
 				this.foods[food.id] = null;
 				delete this.foods[food.id];
+				ObjectPool.release(Food, food);
 			}
 		}
 

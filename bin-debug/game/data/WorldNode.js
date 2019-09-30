@@ -30,21 +30,20 @@ var game;
             };
             WorldNode.prototype.reset = function () {
                 if (this.snakes)
-                    this.snakes.splice(0, this.snakes.length);
+                    this.snakes.length = 0;
                 if (this.snakesPoints)
-                    this.snakesPoints.splice(0, this.snakesPoints.length);
+                    this.snakesPoints.length = 0;
                 if (this.foods)
-                    this.foods.splice(0, this.foods.length);
+                    this.foods.length = 0;
                 if (this.gizimos && this.gizimos.parent)
                     this.gizimos.parent.removeChild(this.gizimos);
                 data.WorldNodeManager.getInstance().nodes[this.id] = null;
                 delete data.WorldNodeManager.getInstance().nodes[this.id];
+                ObjectPool.release(WorldNode, this);
             };
             WorldNode.prototype.drawGizimos = function () {
                 if (!this.gizimos) {
                     this.gizimos = new egret.Sprite();
-                    this.gizimos.x = this.x;
-                    this.gizimos.y = this.y;
                     this.gizimos.graphics.beginFill(0x8B795E);
                     this.gizimos.graphics.drawRect(0, 0, WorldNode.SIDE_LENGTH, WorldNode.SIDE_LENGTH);
                     this.gizimos.graphics.endFill();
@@ -52,16 +51,18 @@ var game;
                     this.gizimos.graphics.drawRect(0, 0, WorldNode.SIDE_LENGTH - 4, WorldNode.SIDE_LENGTH - 4);
                     this.gizimos.graphics.endFill();
                 }
+                this.gizimos.x = this.x;
+                this.gizimos.y = this.y;
                 if (this.isInView) {
                     if (!this.gizimos.parent)
-                        GameLayerManager.getInstance().scene.addChildAt(this.gizimos, 0);
+                        GameLayerManager.getInstance().underUILayer.addChild(this.gizimos);
                 }
                 else {
                     if (this.gizimos && this.gizimos.parent)
                         this.gizimos.parent.removeChild(this.gizimos);
                 }
             };
-            WorldNode.SIDE_LENGTH = game.Snake.BODY_SIZE * 2 * game.Snake.MAX_SCALE;
+            WorldNode.SIDE_LENGTH = game.Snake.BODY_SIZE * 2 * game.Snake.MAX_SCALE * 3;
             return WorldNode;
         }());
         data.WorldNode = WorldNode;

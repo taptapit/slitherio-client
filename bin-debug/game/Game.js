@@ -13,7 +13,11 @@ var WorldNodeManager = game.data.WorldNodeManager;
 var WorldNode = game.data.WorldNode;
 var SnakeAICenter = game.ai.SnakeAICenter;
 var SnakeAI = game.ai.SnakeAI;
+var MathUtils = game.utils.MathUtils;
 var GameHUDRenderer = game.renderer.GameHUDRenderer;
+var WorldRenderer = game.renderer.WorldRenderer;
+var SnakeRenderer = game.renderer.SnakeRenderer;
+var FoodRenderer = game.renderer.FoodRenderer;
 var game;
 (function (game) {
     var Game = (function (_super) {
@@ -33,36 +37,47 @@ var game;
             game.Input.getInstance();
             var scene = new egret.DisplayObjectContainer();
             scene.touchEnabled = false;
+            scene.touchChildren = false;
             this.addChild(scene);
             GameLayerManager.getInstance().scene = scene;
-            var world = new game.World();
+            var world = new game.renderer.WorldRenderer();
             world.touchEnabled = false;
+            world.touchChildren = false;
             scene.addChild(world);
             GameLayerManager.getInstance().world = world;
             var underUILayer = new egret.DisplayObjectContainer();
             underUILayer.touchEnabled = false;
+            underUILayer.touchChildren = false;
             scene.addChild(underUILayer);
             GameLayerManager.getInstance().underUILayer = underUILayer;
             var foodLayer = new egret.DisplayObjectContainer();
             foodLayer.touchEnabled = false;
+            foodLayer.touchChildren = false;
             scene.addChild(foodLayer);
             GameLayerManager.getInstance().foodLayer = foodLayer;
             var foodBlendLayer = new egret.DisplayObjectContainer();
             foodBlendLayer.touchEnabled = false;
+            foodBlendLayer.touchChildren = false;
             scene.addChild(foodBlendLayer);
             GameLayerManager.getInstance().foodBlendLayer = foodBlendLayer;
             var snakeLayer = new egret.DisplayObjectContainer();
             snakeLayer.touchEnabled = false;
+            snakeLayer.touchChildren = false;
             scene.addChild(snakeLayer);
             GameLayerManager.getInstance().snakeLayer = snakeLayer;
             var snakeBlendLayer = new egret.DisplayObjectContainer();
             snakeBlendLayer.touchEnabled = false;
+            snakeBlendLayer.touchChildren = false;
             scene.addChild(snakeBlendLayer);
             GameLayerManager.getInstance().snakeBlendLayer = snakeBlendLayer;
             var aboveUILayer = new egret.DisplayObjectContainer();
             aboveUILayer.touchEnabled = false;
+            aboveUILayer.touchChildren = false;
             this.addChild(aboveUILayer);
             GameLayerManager.getInstance().aboveUILayer = aboveUILayer;
+            var gameHUD = new GameHUDRenderer();
+            aboveUILayer.addChild(gameHUD);
+            GameLayerManager.getInstance().HUD = gameHUD;
             game.Camera.resize(egret.MainContext.instance.stage.stageWidth, egret.MainContext.instance.stage.stageHeight);
         };
         Game.prototype.start = function () {
@@ -112,20 +127,20 @@ var game;
         };
         Game.prototype.update = function () {
             game.Camera.update();
-            if (this.player && !this.player.dead) {
-                var food = game.FoodFactory.RandomCreate();
-                food.energy = 0.1;
-                this.player.eat(food);
-            }
-            if (Object.keys(GameObjectManager.getInstance().foods).length < 1000) {
+            // if(this.player && !this.player.dead)
+            // {
+            // 	let food = FoodFactory.RandomCreate();
+            // 	food.energy = 0.1;
+            // 	this.player.eat(food);
+            // }
+            if (Object.keys(GameObjectManager.getInstance().foods).length < 100) {
                 game.FoodFactory.RandomCreate();
             }
-            // if(Object.keys(GameObjectManager.getInstance().snakes).length < 20)
-            // {
-            // 	let snake = SnakeFactory.RandomCreate();
-            // 	snake.ai = new SnakeAI(snake);
-            // }
-            this.updateMiniMap();
+            if (Object.keys(GameObjectManager.getInstance().snakes).length < 10) {
+                var snake = game.SnakeFactory.RandomCreate();
+                snake.ai = ObjectPool.get(SnakeAI);
+                snake.ai.set(snake);
+            }
             this.updateOperation();
             GameObjectManager.getInstance().update();
             this.updateWorldNode();
@@ -158,7 +173,7 @@ var game;
                 for (var i = 0; i < node.snakes.length; i++) {
                     var snake = node.snakes[i];
                     if (!snake.dead) {
-                        if ((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(game.World.RADIUS - game.World.EDGE_SEGMENT_HEIGHT * 0.5 - snake.radius(), 2))
+                        if ((Math.pow(snake.position.x, 2) + Math.pow(snake.position.y, 2)) > Math.pow(WorldRenderer.RADIUS - WorldRenderer.EDGE_SEGMENT_HEIGHT * 0.5 - snake.radius(), 2))
                             snake.die();
                     }
                     for (var i_1 = 0; i_1 <= 9; i_1++) {
@@ -198,17 +213,13 @@ var game;
                 this.deltaX = game.Input.getInstance().deltaX;
                 this.deltaY = game.Input.getInstance().deltaY;
                 if (this.deltaX != this.lastDeltaX || this.deltaY != this.lastDeltaY) {
-                    this.player.targetAngle = Math.atan2(this.deltaY, this.deltaX);
+                    this.player.targetAngle = MathUtils.atan2(this.deltaY, this.deltaX);
                 }
                 this.player.isAccelerate = game.Input.getInstance().isDoubleClick;
                 this.player.velocity = this.player.isAccelerate ? game.Snake.VELOCITY_FAST : game.Snake.VELOCITY_NORMAL;
             }
         };
-        Game.prototype.updateMiniMap = function () {
-            //TODO
-        };
         Game.prototype.render = function () {
-            GameHUDRenderer.render();
             var snakes = GameObjectManager.getInstance().snakes;
             var foods = GameObjectManager.getInstance().foods;
             for (var key in snakes) {
@@ -220,10 +231,12 @@ var game;
                 food.render();
             }
             GameLayerManager.getInstance().world.render();
-            var nodes = WorldNodeManager.getInstance().nodes;
-            for (var key in nodes) {
-                nodes[key].drawGizimos();
-            }
+            GameLayerManager.getInstance().HUD.render();
+            // let nodes = WorldNodeManager.getInstance().nodes;
+            // for(let key in nodes)
+            // {
+            // 	(nodes[key] as WorldNode).drawGizimos();
+            // }
         };
         return Game;
     }(egret.DisplayObjectContainer));

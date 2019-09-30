@@ -1,7 +1,7 @@
 module game.data {
 	export class WorldNode {
 
-		public static SIDE_LENGTH = Snake.BODY_SIZE * 2 * Snake.MAX_SCALE;
+		public static SIDE_LENGTH = Snake.BODY_SIZE * 2 * Snake.MAX_SCALE * 3;
 
 		public id : number;
 
@@ -52,14 +52,15 @@ module game.data {
 
 		public reset()
 		{
-			if(this.snakes) this.snakes.splice(0, this.snakes.length);
-			if(this.snakesPoints) this.snakesPoints.splice(0, this.snakesPoints.length);
-			if(this.foods) this.foods.splice(0, this.foods.length);
+			if(this.snakes) this.snakes.length = 0;
+			if(this.snakesPoints) this.snakesPoints.length = 0;
+			if(this.foods) this.foods.length = 0;
 
 			if(this.gizimos && this.gizimos.parent) this.gizimos.parent.removeChild(this.gizimos);
 
 			WorldNodeManager.getInstance().nodes[this.id] = null;
 			delete WorldNodeManager.getInstance().nodes[this.id];
+			ObjectPool.release(WorldNode, this);
 		}
 
 		public drawGizimos()
@@ -67,8 +68,6 @@ module game.data {
 			if(!this.gizimos)
 			{
 				this.gizimos = new egret.Sprite();
-				this.gizimos.x = this.x;
-				this.gizimos.y = this.y;
 				this.gizimos.graphics.beginFill(0x8B795E);
 				this.gizimos.graphics.drawRect(0, 0, WorldNode.SIDE_LENGTH, WorldNode.SIDE_LENGTH);
 				this.gizimos.graphics.endFill();
@@ -76,9 +75,12 @@ module game.data {
 				this.gizimos.graphics.drawRect(0, 0, WorldNode.SIDE_LENGTH - 4, WorldNode.SIDE_LENGTH - 4);
 				this.gizimos.graphics.endFill();
 			}
+			this.gizimos.x = this.x;
+			this.gizimos.y = this.y;
+			
 			if(this.isInView)
 			{
-				if(!this.gizimos.parent) GameLayerManager.getInstance().scene.addChildAt(this.gizimos, 0);
+				if(!this.gizimos.parent) GameLayerManager.getInstance().underUILayer.addChild(this.gizimos);
 			}else
 			{
 				if(this.gizimos && this.gizimos.parent) this.gizimos.parent.removeChild(this.gizimos);

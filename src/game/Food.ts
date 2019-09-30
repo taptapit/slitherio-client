@@ -20,21 +20,29 @@ module game {
 			return Snake.BODY_SIZE * this.scale * 0.5;
 		}
 
-		public constructor(id, x, y, energy, color) {
+		public constructor() {
+		}
+
+		public set(id, x, y, energy, color) {
 			this.id = id;
-			this.position = new egret.Point(x, y);
+			this.position = this.position || egret.Point.create(x,y);
+			this.position.setTo(x, y);
 			this.energy = energy;
 			this.scale = Food.energy2Scale(energy);
 			this.color = color;
 			this.eaten = false;
 			this.eatenBy = null;
 			this.eatenAlpha = 0;
-			this.renderer = new renderer.FoodRenderer(this);
 		}
 
 		public dispose()
 		{
-			if(this.renderer) this.renderer.dispose();
+			if(this.renderer)
+			{
+				this.renderer.dispose();	
+				this.renderer = null;
+			}
+
 			GameObjectManager.getInstance().remove(this);
 		}
 
@@ -55,16 +63,23 @@ module game {
 		{
 			if(this.isInView)
 			{
-				if(this.renderer)
+				if(!this.renderer)
 				{
-					if(!this.renderer.parent) GameLayerManager.getInstance().foodLayer.addChild(this.renderer);
-					this.renderer.render();
+					this.renderer = ObjectPool.get(FoodRenderer);
+					this.renderer.set(this);
 				}
+				this.renderer.render();
 			}else
 			{
-				if(this.renderer.parent) GameLayerManager.getInstance().foodLayer.removeChild(this.renderer);
+				if(this.renderer)
+				{
+					this.renderer.dispose();	
+					this.renderer = null;
+				}
 			}
 		}
+
+		
 
 	}
 }

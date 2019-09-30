@@ -20,7 +20,7 @@ var game;
                 var id = column * 10000 + row;
                 var node = this.nodes[id];
                 if (!node && autoCreate) {
-                    node = new data.WorldNode();
+                    node = ObjectPool.get(data.WorldNode);
                     node.x = column * data.WorldNode.SIDE_LENGTH;
                     node.y = row * data.WorldNode.SIDE_LENGTH;
                     node.row = row;

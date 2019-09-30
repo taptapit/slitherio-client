@@ -8,8 +8,12 @@ var game;
         }
         SnakeFactory.RandomCreate = function () {
             var randomRadius = Math.random() * 0.9;
-            var randomAngle = Math.random() * Math.PI * 2;
-            var snake = new game.Snake(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(Math.random() * game.World.RADIUS * 0.9, Math.random() * game.World.RADIUS * 0.9), Math.random() * Math.PI * 2, game.Snake.VELOCITY_NORMAL, [], ColorUtils.random(), 1200);
+            var randomAngle = Math.random() * MathUtils.PI * 2;
+            var x = WorldRenderer.RADIUS * randomRadius * MathUtils.cos(randomAngle);
+            var y = WorldRenderer.RADIUS * randomRadius * MathUtils.sin(randomAngle);
+            // let snake = new Snake(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(x, y), randomAngle, Snake.VELOCITY_NORMAL, [], ColorUtils.random(), 1200);
+            var snake = ObjectPool.get(game.Snake);
+            snake.set(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(x, y), randomAngle, game.Snake.VELOCITY_NORMAL, [], ColorUtils.random(), 1200);
             GameObjectManager.getInstance().add(snake);
             return snake;
         };

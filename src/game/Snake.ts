@@ -106,7 +106,11 @@ module game {
 			return Snake.BODY_SIZE * this.scale;
 		}
 
-		public constructor(id, name, position, angle, velocity, points = null, color = 0, energy = 0) {
+		public constructor() {
+		}
+
+		public set(id, name, position, angle, velocity, points, color, energy)
+		{
 			this.id = id;
 			this.name = name;
 			this.position = position;
@@ -120,13 +124,19 @@ module game {
 			this.length = Snake.energy2Length(energy);
 			this.scale = Snake.length2Scale(this.length);
 			this.scaleTurnAngle = Snake.scale2TurnAngle(this.scale);
-			this.renderer = new renderer.SnakeRenderer(this);
+			this.dead = false;
 		}
 
 		public dispose()
 		{
+			ObjectPool.release(SnakeAI, this.ai);
 			this.ai = null;
-			if(this.renderer.parent) GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
+
+			if(this.renderer)
+			{
+				this.renderer.dispose();
+				this.renderer = null;
+			}
 			GameObjectManager.getInstance().remove(this);
 		}
 
@@ -178,16 +188,10 @@ module game {
 
 			let deltaTime = Time.deltaTime;
 			
-			this.updateNameAlpha();
 			this.updateDying(deltaTime);
 			this.updateEnergy(deltaTime);
 			this.turn(deltaTime);
 			this.move(deltaTime);
-		}
-
-		public updateNameAlpha()
-		{
-			//TODO
 		}
 
 		public updateDying(deltaTime)
@@ -236,17 +240,10 @@ module game {
 		public turn(deltaTime)
 		{
 			this.angle = this.clamp(((this.angle + Math.PI) % (Math.PI * 2)), -Math.PI, Math.PI) - Math.PI;
-			// console.log("turn angle:" + this.angle);
 			this.targetAngle = this.clamp(((this.targetAngle + Math.PI) % (Math.PI * 2)), -Math.PI, Math.PI) - Math.PI;
-			// console.log("turn targetAngle:" + this.targetAngle);
 
 			let deltaAngle = deltaTime * this.scaleTurnAngle * this.velocityTurnAngle;
 			deltaAngle = Math.min(deltaAngle, Math.abs(this.targetAngle-this.angle));
-
-			// console.log("turn deltaTime:" + deltaTime);
-			// console.log("turn velocityTurnAngle:" + this.velocityTurnAngle);
-			// console.log("turn scaleTurnAngle:" + this.scaleTurnAngle);
-			// console.log("turn deltaAngle:" + deltaAngle);
 			
 			if(Math.abs(this.angle - this.targetAngle) > Math.PI)
 			{
@@ -265,20 +262,9 @@ module game {
 			let deltaPoint = this.scale * Snake.BODY_POINT_DELTA_SCALE;
 			let moveRatio = Math.min(1, distance / deltaPoint);
 			
-			// console.log("scale:" + this.scale);
-			// console.log("move time:" + deltaTime);
-			// console.log("move distance:" + distance);
-			// console.log("move movePoints:" + movePoints);
-			// console.log("this.angle:" + this.angle);
+			this.position.x = this.position.x + MathUtils.cos(this.angle) * distance;
+			this.position.y = this.position.y + MathUtils.sin(this.angle) * distance;
 
-			// console.log("111this.position:x:" + this.position.x + ",y:" + this.position.y);
-			
-			this.position.x = this.position.x + Math.cos(this.angle) * distance;
-			this.position.y = this.position.y + Math.sin(this.angle) * distance;
-
-			// console.log("222this.position:x:" + this.position.x + ",y:" + this.position.y);
-			// console.log("this.points.length" + this.points.length);
-			// console.log("this.length" + this.length);
 			if(this.points.length > this.length)
 			{
 				ObjectPool.release(SnakePoint, this.points.pop());
@@ -313,15 +299,19 @@ module game {
 		{
 			if(this.isInView)
 			{
-				if(this.renderer)
+				if(!this.renderer)
 				{
-					if(!this.renderer.parent) GameLayerManager.getInstance().snakeLayer.addChild(this.renderer);
-					
-					this.renderer.render();
+					this.renderer = ObjectPool.get(SnakeRenderer);
+					this.renderer.set(this);
 				}
+				this.renderer.render();
 			}else
 			{
-				if(this.renderer && this.renderer.parent) GameLayerManager.getInstance().snakeLayer.removeChild(this.renderer);
+				if(this.renderer)
+				{
+					this.renderer.dispose();
+					this.renderer = null;
+				}
 			}
 		}
 

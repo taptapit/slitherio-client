@@ -8,17 +8,21 @@ var game;
         }
         FoodFactory.Create = function (x, y, energy, color) {
             if (color === void 0) { color = 0x000000; }
-            var food = new game.Food(++GameObjectManager.UUID, x, y, energy, color);
+            // let food : Food = new Food(++GameObjectManager.UUID, x, y, energy, color);
+            var food = ObjectPool.get(game.Food);
+            food.set(++GameObjectManager.UUID, x, y, energy, color);
             GameObjectManager.getInstance().add(food);
             return food;
         };
         FoodFactory.RandomCreate = function () {
             var randomRadius = Math.random() * 0.9;
             var randomAngle = Math.random() * Math.PI * 2;
-            var x = game.World.RADIUS * randomRadius * Math.cos(randomAngle);
-            var y = game.World.RADIUS * randomRadius * Math.sin(randomAngle);
+            var x = WorldRenderer.RADIUS * randomRadius * MathUtils.cos(randomAngle);
+            var y = WorldRenderer.RADIUS * randomRadius * MathUtils.sin(randomAngle);
             var renergy = Math.random() * game.Snake.ENERGY_PER_POINT * 0.5;
-            var food = new game.Food(++GameObjectManager.UUID, x, y, renergy, ColorUtils.random());
+            var food = ObjectPool.get(game.Food);
+            food.set(++GameObjectManager.UUID, x, y, renergy, ColorUtils.random());
+            // let food : Food =  new Food(++GameObjectManager.UUID, x, y, renergy, ColorUtils.random());
             GameObjectManager.getInstance().add(food);
             return food;
         };

@@ -1,18 +1,27 @@
 module game.renderer {
-	export class GameHUDRenderer {
+	export class GameHUDRenderer extends egret.DisplayObjectContainer {
 
-		public static textFields = new Object();
+		public textFields = new Object();
+
+		public map : MapRenderer;
 
 		public constructor() {
+			super();
+			this.map = new MapRenderer();
+			this.map.x = egret.MainContext.instance.stage.stageWidth - 200;
+			this.map.y = egret.MainContext.instance.stage.stageHeight - 200;
+			this.addChild(this.map);
 		}
 
 		private static UPDATE_FREQUENCY = 1;
-		private static tick = 0;
-		public static render()
+		private tick = 0;
+		public render()
 		{
 			this.tick -= Time.deltaTime; 
 			if(this.tick > 0) return;
 			this.tick = GameHUDRenderer.UPDATE_FREQUENCY;
+
+			this.map.render();
 
 			let ranks = GameObjectManager.getInstance().ranks;
 			let history = GameObjectManager.getInstance().history;
@@ -58,25 +67,25 @@ module game.renderer {
 				this.clear("History");
 		}
 
-		private static clear(id)
+		private clear(id)
 		{
-			let textField : egret.TextField = GameHUDRenderer.textFields[id];
+			let textField : egret.TextField = this.textFields[id];
 			if(textField)
 			{
 				if(textField.parent) textField.parent.removeChild(textField);
-				GameHUDRenderer.textFields[id] = null;
-				delete GameHUDRenderer.textFields[id];
+				this.textFields[id] = null;
+				delete this.textFields[id];
 			}
 		}
 
-		private static drawText(id, content, x, y, size, color, alpha)
+		private drawText(id, content, x, y, size, color, alpha)
 		{
-			let textField : egret.TextField = GameHUDRenderer.textFields[id];
+			let textField : egret.TextField = this.textFields[id];
 			if(!textField)
 			{
 				textField = new egret.TextField();
 				textField.textAlign = egret.HorizontalAlign.LEFT;
-				GameHUDRenderer.textFields[id] = textField;
+				this.textFields[id] = textField;
 			}
 			textField.text = content;
 			textField.x = x;
@@ -85,7 +94,7 @@ module game.renderer {
 			textField.textColor = color;
 			textField.alpha = alpha;
 			
-			if(!textField.parent) GameLayerManager.getInstance().aboveUILayer.addChild(textField);
+			if(!textField.parent) this.addChild(textField);
 		}
 
 	}

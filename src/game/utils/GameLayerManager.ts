@@ -16,7 +16,8 @@ module game.utils {
 		}
 
 		public scene : egret.DisplayObjectContainer;
-		public world : game.World;
+		public world : WorldRenderer;
+		public HUD : GameHUDRenderer;
 		public underUILayer : egret.DisplayObjectContainer;
 		public foodLayer : egret.DisplayObjectContainer;
 		public foodBlendLayer : egret.DisplayObjectContainer;

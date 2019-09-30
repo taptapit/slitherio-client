@@ -56,11 +56,13 @@ var game;
                     var snake = o;
                     this.snakes[snake.id] = null;
                     delete this.snakes[snake.id];
+                    ObjectPool.release(game.Snake, snake);
                 }
                 else if (o instanceof game.Food) {
                     var food = o;
                     this.foods[food.id] = null;
                     delete this.foods[food.id];
+                    ObjectPool.release(game.Food, food);
                 }
             };
             GameObjectManager.prototype.get = function (o) {

@@ -14,17 +14,27 @@ var game;
     (function (renderer) {
         var SnakeRenderer = (function (_super) {
             __extends(SnakeRenderer, _super);
-            function SnakeRenderer(data) {
-                var _this = _super.call(this) || this;
-                _this.data = data;
-                _this.touchEnabled = false;
-                _this.subRenderers = [];
-                _this.subBlendRenderers = [];
-                _this.txtName = new egret.TextField();
-                _this.txtName.textColor = _this.data.color;
-                _this.txtName.text = _this.data.name;
-                return _this;
+            function SnakeRenderer() {
+                return _super.call(this) || this;
             }
+            SnakeRenderer.prototype.set = function (data) {
+                this.data = data;
+                this.touchEnabled = false;
+                this.subRenderers = [];
+                this.subBlendRenderers = [];
+                this.txtName = this.txtName || new egret.TextField();
+                GameLayerManager.getInstance().aboveUILayer.addChildAt(this.txtName, 0);
+                if (!this.parent)
+                    GameLayerManager.getInstance().snakeLayer.addChild(this);
+            };
+            SnakeRenderer.prototype.dispose = function () {
+                if (this.parent)
+                    this.parent.removeChild(this);
+                for (var i = 0; i < this.subRenderers.length; i++) {
+                    this.removeSubRenderer(i);
+                }
+                ObjectPool.release(SnakeRenderer, this);
+            };
             SnakeRenderer.prototype.prepareSubRenderer = function (data, index) {
                 if (this.subRenderers.length < index || !this.subRenderers[index]) {
                     var subRenderer = ObjectPool.get(egret.Sprite);
@@ -65,16 +75,11 @@ var game;
                 var subRenderer;
                 var subBlendRenderer;
                 var renderIndex = 0;
-                if (snake.isInView) {
-                    if (!this.txtName.parent)
-                        GameLayerManager.getInstance().underUILayer.addChild(this.txtName);
-                    this.txtName.x = snakePoint.x;
-                    this.txtName.y = snakePoint.y;
-                }
-                else {
-                    if (this.txtName.parent)
-                        this.txtName.parent.removeChild(this.txtName);
-                }
+                this.txtName.textColor = snake.color;
+                this.txtName.borderColor = 0xffffff;
+                this.txtName.text = snake.name;
+                this.txtName.x = snakePoint.x;
+                this.txtName.y = snakePoint.y;
                 for (var i = this.data.points.length - 1; i >= 0; i--) {
                     snakePoint = this.data.points[i];
                     if (snakePoint.isInView) {

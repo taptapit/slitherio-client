@@ -7,11 +7,12 @@ module game {
 		public static RandomCreate()
 		{
 			let randomRadius = Math.random() * 0.9;
-			let randomAngle = Math.random() * Math.PI * 2;
-			let snake = new Snake(++GameObjectManager.UUID,
-						GameObjectManager.UUID, 
-			egret.Point.create(Math.random() * World.RADIUS * 0.9, Math.random() * World.RADIUS * 0.9), 
-			Math.random() * Math.PI * 2, Snake.VELOCITY_NORMAL, [], ColorUtils.random(), 1200);
+			let randomAngle = Math.random() * MathUtils.PI * 2;
+			let x = WorldRenderer.RADIUS * randomRadius * MathUtils.cos(randomAngle);
+			let y = WorldRenderer.RADIUS * randomRadius * MathUtils.sin(randomAngle);
+			// let snake = new Snake(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(x, y), randomAngle, Snake.VELOCITY_NORMAL, [], ColorUtils.random(), 1200);
+			let snake : Snake = ObjectPool.get(Snake);
+			snake.set(++GameObjectManager.UUID, GameObjectManager.UUID, egret.Point.create(x, y), randomAngle, Snake.VELOCITY_NORMAL, [], ColorUtils.random(), 1200);
 			GameObjectManager.getInstance().add(snake);
 			return snake;
 		}

@@ -9,16 +9,33 @@ module game.renderer {
 
 		private txtName : egret.TextField;
 
-		public constructor(data : Snake) {
+		public constructor() {
 			super();
+		}
+
+		public set(data : Snake)
+		{
 			this.data = data;
 			this.touchEnabled = false;
 			this.subRenderers = [];
 			this.subBlendRenderers = [];
 
-			this.txtName = new egret.TextField();
-			this.txtName.textColor = this.data.color;
-			this.txtName.text = this.data.name;
+			this.txtName = this.txtName || new egret.TextField();
+			GameLayerManager.getInstance().aboveUILayer.addChildAt(this.txtName, 0);
+
+			if(!this.parent) GameLayerManager.getInstance().snakeLayer.addChild(this);
+		}
+
+		public dispose()
+		{
+			if(this.parent) this.parent.removeChild(this);
+			
+			for(var i = 0; i < this.subRenderers.length; i++)
+			{
+				this.removeSubRenderer(i);
+			}
+
+			ObjectPool.release(SnakeRenderer, this);
 		}
 
 		private prepareSubRenderer(data : SnakePoint, index : number)
@@ -72,17 +89,11 @@ module game.renderer {
 			let subBlendRenderer : egret.Sprite;
 			let renderIndex = 0;
 
-			if(snake.isInView)
-			{
-				if(!this.txtName.parent)
-					GameLayerManager.getInstance().underUILayer.addChild(this.txtName);
-				this.txtName.x = snakePoint.x;
-				this.txtName.y = snakePoint.y;
-			}else
-			{
-				if(this.txtName.parent)
-					this.txtName.parent.removeChild(this.txtName);
-			}
+			this.txtName.textColor = snake.color;
+			this.txtName.borderColor = 0xffffff;
+			this.txtName.text = snake.name;
+			this.txtName.x = snakePoint.x;
+			this.txtName.y = snakePoint.y;
 
 			for(var i = this.data.points.length - 1; i >= 0; i--)
 			{
